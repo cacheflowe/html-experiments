@@ -1,0 +1,22 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<title>Bit Theory Logo</title>
+</head>
+
+<body>
+	<div id="logo"></div>
+	<script type="text/javascript" src="logo.js"></script>
+	<script>
+		var isCanvasSupported = function() {
+			var elem = document.createElement('canvas');
+			return !!(elem.getContext && elem.getContext('2d'));
+		}
+		
+		if( isCanvasSupported() ) { 
+			var logoContainer = document.getElementById("logo");
+			var logo = new Logo( logoContainer, 43 );
+		}
+	</script>
+</body>
+</html>
