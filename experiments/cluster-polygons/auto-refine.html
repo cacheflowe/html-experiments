@@ -27,6 +27,7 @@
   var _col = 1;
   var _numArms = 50;
   var _maxArmLength = 500;
+  var _fills = (Math.random() > 0.5);
 
   // polygon arm
   var PolygonArm = function( x, y, circleInc, startColor ) {
@@ -74,7 +75,7 @@
       _context.stroke();
     }
     _context.closePath();
-    _context.fill();
+    if( _fills ) _context.fill();
 
     // sweep across grid
     _col += _skipPixels;
