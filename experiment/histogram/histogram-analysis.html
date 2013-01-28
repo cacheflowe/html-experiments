@@ -1,0 +1,105 @@
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+  <title>Image Histogram</title>
+  <style>
+  * {
+    margin:0px;
+    padding:0px;
+  }
+  div, canvas {
+    display:block;
+  }
+  </style>
+  <script type="text/javascript" src="../../javascripts/modeset/math_util.js"></script>
+  <script type="text/javascript" src="../../javascripts/modeset/canvas_util.js"></script>
+</head>
+
+<body>
+  <canvas id="draw" width="800" height="800"></canvas>
+  <canvas id="histogram" width="800" height="800"></canvas>
+  <script>
+
+    // Sketch ------------------------------------------  
+    var _canvas = document.getElementById("draw");
+    var _canvasHist = document.getElementById("histogram");
+    var _context = _canvas.getContext("2d");
+    var _contextHist = _canvasHist.getContext("2d");
+    var _contextSource = null;
+    var _width;
+    var _height;
+    
+    var loadImageToContext = function(canvasCtx, image){
+      _contextSource = canvasCtx;
+
+      _width = _canvas.width = _canvasHist.width = _contextSource.canvas.width;
+      _height = _canvas.height = _canvasHist.height =_contextSource.canvas.height;
+
+      _context.drawImage( image, 0, 0 );
+
+      analyzeImage();
+      drawHistogram();
+    };
+
+    // analysis vars
+    var _skipPixels = 2;
+    var _rgbThreshold = 0.03;
+    var _colorArray = [];
+
+    var colorIsStored = function( rgbArray ) {
+      // loop through existing colors to see if a similar one's already stored
+      var similarColorFound = false;
+      for( var i=0; i < _colorArray.length; i++ ) {
+        if( !similarColorFound && CanvasUtil.rgbDifference( _colorArray[i].rgb[0], _colorArray[i].rgb[1], _colorArray[i].rgb[2], rgbArray[0], rgbArray[1], rgbArray[2] ) < _rgbThreshold ) {
+          similarColorFound = true;
+          _colorArray[i].count++;
+          break;
+        }
+      }
+      // found a color for the first time
+      if( !similarColorFound ) {
+        _colorArray.push({rgb:rgbArray,count:1});
+      }
+    };
+
+    var analyzeImage = function() {
+      for( x = 0; x < _width; x += _skipPixels ) {
+        for( y = 0; y < _height; y += _skipPixels ) {
+          colorIsStored( CanvasUtil.getPixelColorFromContext( _contextSource, x, y ) );
+        }
+      }
+    };
+
+    var drawHistogram = function() {
+      // sort on color count
+      _colorArray.sort(function(a, b){
+        return b.count-a.count;
+      });
+
+      // find highest color count
+      var maxCount = 0;
+      for( var i = 0; i < _colorArray.length; i++ ) {
+        if( _colorArray[i].count > maxCount ) maxCount = _colorArray[i].count;
+      }
+      var heightMultiplier = _height / maxCount;
+
+      // draw histogram bars
+      var numColors = _colorArray.length;
+      var colorW = Math.ceil(_width / numColors);
+      for( var i = 0; i < _colorArray.length; i++ ) {
+        _contextHist.fillStyle = CanvasUtil.rgbToCanvasColor( _colorArray[i].rgb[0], _colorArray[i].rgb[1], _colorArray[i].rgb[2], 1.0 );
+        _contextHist.fillRect( i*colorW, 0, colorW, _colorArray[i].count * heightMultiplier );  
+      }
+    };
+
+    
+    // load and draw image
+    CanvasUtil.loadImageToContext("../../media/images/justin-stephen-yss-artopia.jpg", loadImageToContext);
+
+    _canvasHist.addEventListener('click',function(){
+      CanvasUtil.saveCanvas( _contextHist );
+    },false);
+
+  </script>
+</body>
+</html>

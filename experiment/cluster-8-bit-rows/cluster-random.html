@@ -1,0 +1,91 @@
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+  <title>Cluster Range</title>
+  <style>
+  * {
+    margin:0px;
+    padding:0px;
+    float:left;
+  }
+  </style>
+  <script type="text/javascript" src="../../javascripts/modeset/canvas_util.js"></script>
+</head>
+
+<body>
+  <canvas id="draw" width="800" height="800"></canvas>
+
+  <script>
+  // cluster range
+  var ClusterRange = function( startX, startY ) {
+    // return if we've already drawn this pixel
+    var curDrawnPixel = CanvasUtil.getPixelColorFromContext( _context, startX, startY );
+    // skip pixels in size of drawn rect
+    var skipPixels = 10;
+    // get start color
+    var startColor = CanvasUtil.getPixelColorFromContext( _contextSource, startX, startY );
+    _context.fillStyle = CanvasUtil.rgbToCanvasColor( startColor[0], startColor[1], startColor[2], 1.0 );
+    // start drawing right until threshold is crossed
+    var curX = startX;
+    var curY = startY;
+    var curColor = CanvasUtil.getPixelColorFromContext( _contextSource, curX, curY );
+    // find left side of threshold
+    while( CanvasUtil.rgbDifference( startColor[0], startColor[1], startColor[2], curColor[0], curColor[1], curColor[2] ) < 0.1 && curX > 0 ) {
+      curX -= skipPixels;
+      curColor = CanvasUtil.getPixelColorFromContext( _contextSource, curX, curY );
+    }
+    curX += skipPixels;
+    curColor = CanvasUtil.getPixelColorFromContext( _contextSource, curX, curY );
+    // draw line of pixels until threshold is met on the right side
+    while( CanvasUtil.rgbDifference( startColor[0], startColor[1], startColor[2], curColor[0], curColor[1], curColor[2] ) < 0.1 && curX < _width ) {
+      _context.fillRect( curX, curY, skipPixels, skipPixels );
+      curX += skipPixels;
+      curColor = CanvasUtil.getPixelColorFromContext( _contextSource, curX, curY );
+    }
+  };
+
+
+  // Sketch ------------------------------------------  
+  var _canvas = document.getElementById("draw");
+  var _context = _canvas.getContext("2d");
+  var _contextSource = null;
+  var _width;
+  var _height;
+  _canvas.style.border = '1px solid black';
+
+
+  var loadImageToContext = function(ctx, image){
+    _contextSource = ctx;
+
+    _width = _canvas.width = ctx.canvas.width;
+    _height = _canvas.height = ctx.canvas.height;
+
+    // _context.fillStyle = CanvasUtil.rgbToCanvasColor( 255, 255, 255, 1.0 );
+    // _context.fillRect( 0, 0, _width, _height );
+
+    _context.drawImage( image, 0, 0 );
+
+    fillClusters();
+  };
+
+  var fillClusters = function() {
+    for( var i=0; i<10; i++ ) {
+      new ClusterRange(Math.round(Math.random()*_width), Math.round(Math.random()*_height));
+      // new ClusterRow();
+    }
+    setTimeout(function(){
+      fillClusters();
+    }, 10);
+  };
+  
+  // load and draw image
+  CanvasUtil.loadImageToContext('../../media/images/justin-rp-2.png', loadImageToContext);
+    
+  // canvas saving
+  _canvas.addEventListener('click',function(){
+    CanvasUtil.saveCanvas( _context );
+  },false);
+
+  </script>
+</body>
+</html>

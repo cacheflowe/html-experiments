@@ -1,0 +1,144 @@
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+  <title>Sacred my Ass</title>
+  <style>
+  * {
+    margin:0px;
+    padding:0px;
+    float:left;
+  }
+  canvas, a {
+    display: block;
+    float: left;
+  }
+  </style>
+  <script type="text/javascript" src="../../javascripts/modeset/math_util.js"></script>
+  <script type="text/javascript" src="../../javascripts/modeset/canvas_util.js"></script>
+</head>
+
+<body>
+  <a href="javascript:window.location.reload();">Reload</a>
+  <canvas id="draw"></canvas>
+  <script type="text/javascript">  
+    _width = window.innerWidth;
+    _height = window.innerHeight;
+
+    var _animInc = 0;
+    var _baseRadius = MathUtil.randRange( _width/16, _width/8 );
+    var _curCircleSegment = 0;
+    var _recursiveDivisor = 0.25;
+    var _rootRot = 0;
+
+    var _numArms = MathUtil.randRange( 3, 8 );
+    _numArms = Math.round(_numArms);
+    var _drawsLines = MathUtil.randRange( 0, 1 ) == 1;
+    var _fillsShape = MathUtil.randRange( 0, 1 ) == 1;
+    var _fillsSolid = MathUtil.randRange( 0, 1 ) == 1;
+    var _leavesTrails = MathUtil.randRange( 0, 1 ) == 1;
+    var _fillAlpha = MathUtil.randRangeDecimel( 0.5, 1 );
+    var _strokeWidth = MathUtil.randRangeDecimel( 0.5, 3 );
+    if( _fillsSolid ) _fillAlpha = 1;
+
+
+
+
+    // polygon arm
+    var PolygonArm = function( baseX, baseY, startCircleInc, radius ) {
+      this.x = baseX + Math.sin( startCircleInc ) * radius;
+      this.y = baseY + Math.cos( startCircleInc ) * radius;
+
+      var extraX = Math.sin( startCircleInc ) * radius * _recursiveDivisor;
+      var extraY = Math.cos( startCircleInc ) * radius * _recursiveDivisor;
+
+      // try to make sure new polys are further than the center of the current... not the best option here
+      var polyCenterDistToSceneCenter = MathUtil.getDistance( baseX, baseY, _width/2, _height/2 );
+      var polyArmDist = MathUtil.getDistance( this.x, this.y, _width/2, _height/2 );
+      var furtherFromCenter = (polyCenterDistToSceneCenter < polyArmDist )
+
+      if( radius > _baseRadius/3 && furtherFromCenter ) {
+        new ClusterPolygon( this.x + extraX, this.y + extraY, _curCircleSegment + startCircleInc, radius );
+      }
+    }
+
+
+
+
+    // polygon controller
+    var ClusterPolygon = function( x, y, startCircleInc, radius ) {
+
+      var arms = [];
+      _curCircleSegment = ((Math.PI*2) / _numArms);
+      for( var i=0; i < _numArms; i++ ) {
+        circleInc = _curCircleSegment * i;
+        arms.push( new PolygonArm( x, y, circleInc + startCircleInc, radius * _recursiveDivisor ) );
+      }
+
+      // configure polygon draw props
+      if( _fillsShape )
+        _context.fillStyle = 'rgba(255,255,255,'+_fillAlpha+')';
+      else 
+        _context.fillStyle = 'rgba(255,255,255,0)';
+      _context.strokeStyle = 'rgba(0,0,0,1)';
+      _context.lineWidth = _strokeWidth;// - (1/radius)*20;
+      _context.lineJoin = 'round';
+
+      // draw the polygon vertices
+      _context.beginPath();
+      _context.moveTo( arms[0].x, arms[0].y );
+      for( var i=0; i < _numArms; i++ ) {
+        _context.lineTo( arms[i].x, arms[i].y );
+      }
+      _context.closePath();
+      _context.fill();
+      _context.stroke();
+
+      // draw lines between polygon center & vertices
+      if( _drawsLines ) {
+        for( var i=0; i < _numArms; i++ ) {
+          _context.beginPath();
+          _context.moveTo( x, y );
+          _context.lineTo( arms[i].x, arms[i].y );
+          _context.closePath();
+          _context.fill();
+          _context.stroke();
+        }
+      }
+
+    };
+
+
+
+    // Sketch ------------------------------------------  
+    var _canvas = document.getElementById("draw");
+    _canvas.width = window.innerWidth;
+    _canvas.height = window.innerHeight;
+    var _context = _canvas.getContext("2d");
+    var _canvasSource = null;
+    var _contextSource = null;
+    var _width;
+    var _height;
+    _canvas.style.border = '1px solid black';
+
+
+    var fillClusters = function() {
+      if( !_leavesTrails ) _context.clearRect( 0, 0, _width, _height );
+      _animInc += 0.01;
+      startRadius = _baseRadius + _baseRadius/2 * Math.sin(_animInc);
+      _recursiveDivisor = 0.4 + 0.3 * Math.sin(_animInc);
+      _rootRot = _animInc;
+      new ClusterPolygon( _width/2, _height/2, _rootRot, startRadius );
+      setTimeout(function(){
+        fillClusters();
+      }, 33);
+    };
+    fillClusters();
+
+    // canvas saving
+    _canvas.addEventListener('click',function(){
+      CanvasUtil.saveCanvas( _context );
+    },false);
+
+  </script>
+</body>
+</html>
