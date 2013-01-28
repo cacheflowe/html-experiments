@@ -15,6 +15,7 @@
   </head>
   <body>
     <canvas id="myCanvas" width="400" height="400"></canvas>
+    <script type="text/javascript" src="../../lib/canvas_util.js"></script>
     <script>
       var drawHeart = function( context, x, y, size, rotation ) {
         var top = -1 * size,
@@ -69,6 +70,11 @@
           drawHeart( context, canvas.width/2, canvas.height/2, i, Math.sin((startInc + i)/100)/4 );
         }
       }, 50);
+
+      canvas.addEventListener('click',function(){
+        CanvasUtil.saveCanvas( context );
+      },false);
+
 
     </script>
   </body>
