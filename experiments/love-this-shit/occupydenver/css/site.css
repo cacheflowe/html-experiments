@@ -1,0 +1,56 @@
+body {
+	background: #ffffff;
+	color: #333;
+}
+a {
+	color: #333;
+	text-decoration: underline;
+}
+a:hover {
+	text-decoration: none;
+}
+
+
+#analysis {
+  width:100%;
+  height:40px;
+  background-color:#fff;
+	font-size: 20px;
+	line-height:20px;
+	padding:10px;
+	text-align:left;
+	text-shadow:none;
+	overflow:auto;
+	margin-bottom:10px;
+}
+
+#analysis_inner {
+  width:auto;
+  height:40px;
+	line-height:20px;
+}
+
+#analysis span {
+  display:block;
+  float:left;
+  margin-right:15px;
+}
+
+#site {
+  width:100%;
+  overflow:hidden;
+  top:50px;
+	font-size: 110px;
+	line-height:100px;
+	text-align:center;
+	text-shadow:#222222 1px 1px 1px;
+}
+
+#loader {
+  display:block;
+  float:right;
+  width:100px;
+	height: 100px;
+	line-height:100px;
+	background:url(../images/loader.gif) no-repeat center center;
+}

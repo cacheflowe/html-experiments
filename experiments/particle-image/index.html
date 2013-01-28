@@ -1,0 +1,360 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<title>Canvas Particles</title>
+<style>
+* {
+  margin:0px;
+  padding:0px;
+  float:left;
+}
+#drop {
+  height:100px;
+  width:100px;
+  border: 1px solid red;
+}
+</style>
+</head>
+
+<body>
+	<canvas id="draw" width="700" height="467"></canvas>
+	<canvas style="display:none" id="source" width="700" height="467"></canvas>
+	<img style="display:none" id="save" width="700" height="467"/>
+	<br/>
+	<a href="javascript:window.location.reload()">RELOAD</a>
+	<div id="drop" ondragenter="return false" ondragover="return false" ondrop="dropIt(event)">Drop Img here</div>
+	<input type="file" id="input" size="10" multiple="true" onchange="imagesSelected(this.files)" />
+  
+	<script>
+	// MathUtils ------------------------------------------
+  var getDist = function(x1,y1,x2,y2) {
+  	return Math.sqrt( Math.pow(x1-x2,2) + Math.pow(y1-y2,2) );
+  };
+
+  // get the angle fron current coordinate to target coordinate
+  var getAngleToTarget = function(x1,y1,x2,y2) {
+  	return constrainAngle( -Math.atan2( x1 - x2, y1 - y2 ) * 180 / Math.PI );
+  };
+
+  // keep an angle between 0-360
+  var constrainAngle = function( angle ) {
+  	if( angle < 0 ) return angle + 360;
+  	if( angle > 360 ) return angle - 360;
+  	return angle;
+  };
+  
+  var randRange = function( min, max ) {		
+  	return Math.random() * ( max - min ) + min;
+  };
+
+  var degreesToRadians = function( d ) {
+  	return d * ( Math.PI / 180 );
+  };
+
+  var radiansToDegrees = function( r ) {
+  	return r * ( 180 / Math.PI );
+  };
+  
+	
+	// Sketch ------------------------------------------	
+	var canvas = document.getElementById("draw");
+	var canvasSource = document.getElementById("source");
+	var canvasSave = document.getElementById("save");
+	var _context = canvas.getContext("2d");
+	var _contextSource = canvasSource.getContext("2d");
+	var _width;
+	var _height;
+	canvas.style.border = '1px solid black';
+	canvasSource.style.border = '1px solid black';
+	
+	var LEFT = 0;
+	var RIGHT = 1;
+	
+	var _maxDist = getDist(0,0,_width,_height);
+	var _numParticles = 1000;
+	var _numAttractors = 10;
+  var _particleArr = [];
+  var _attractorArr = [];
+
+  var init = function(){
+    createParticles();
+    createAttractors();
+    draw();
+  };
+  
+  // load and draw image
+	var image = new Image();
+	var imgW, imgH;
+	var imgLoaded = false;
+	var _pixelData = null;
+  // image.src = "brimliski_2012_small.png";
+  // image.src = "brimliski_2012.jpg";
+  image.src = "../../media/images/justin-stephen-yss-artopia.jpg";
+	image.onload = function() {
+		_width = image.width;
+		_height = image.height;
+		imgLoaded = true;
+		_context.drawImage( image, 0, 0 );
+		_contextSource.drawImage( image, 0, 0 );
+		init();
+	};
+	
+	var setCanvsSize = function( w, h ){
+	  canvas.width = w;
+		canvas.height = h;
+		canvasSource.width = w;
+		canvasSource.height = h;
+		canvasSave.width = w;
+		canvasSave.height = h;
+	};
+	
+	function imagesSelected(myFiles) {
+    for (var i = 0, f; f = myFiles[i]; i++) {
+      var imageReader = new FileReader();
+      imageReader.onload = (function(aFile) {
+        return function(e) {
+          var span = document.createElement('span');
+          // span.innerHTML = ['<img class="images" src="', e.target.result,'" title="', aFile.name, '"/>'].join('');
+          var img = document.createElement('img');
+          img.src = e.target.result;
+          img.alt = aFile.name;
+          // document.getElementById('drop').insertBefore(img, null);
+          setTimeout(function(){
+            setCanvsSize( img.width, img.height );
+        		_context.drawImage( img, 0, 0 );
+        		_contextSource.drawImage( img, 0, 0 );
+          },300);
+        };
+      })(f);
+      imageReader.readAsDataURL(f);
+    }
+  }
+
+  function dropIt(e) {  
+     imagesSelected(e.dataTransfer.files); 
+     e.stopPropagation();  
+     e.preventDefault();   
+  }
+	
+	// mouse tracking
+	canvas.addEventListener('mousemove',onMouseMoved,false);
+	var _mouseX = 0;
+	var _mouseY = 0;
+	function onMouseMoved(e){
+		_mouseX = e.clientX;
+		_mouseY = e.clientY;
+	}
+	
+	// canvas saving
+	var saveCanvas = function(){
+  	// save canvas image as data url (png format by default)
+    var dataURL = canvas.toDataURL();
+
+    // set canvasImg image src to dataURL
+    // so it can be saved as an image
+    document.getElementById("save").src = dataURL;
+	};
+	canvas.addEventListener('click',saveCanvas,false);
+	
+ 
+  var createParticles = function(){
+    var startX;
+    var startY;
+    for( var i = 0; i < _numParticles; i++ ) {
+      startX = randRange( 0, _width );
+      startY = randRange( 0, _height );
+    	_particleArr.push({
+    	  _angle: randRange( 0, 360 ),
+    	  _speed: randRange( 1, 1  ),
+    	  _x: startX,
+    	  _y: startY,
+    	  _turnRadius: randRange( 1.5, 7 ),
+    	  _lifeSpan: randRange( 1000, 5500 ),
+    	  _width: _width/500,
+    	  _height: _height/500,
+    	  _alpha: 0.4,
+    	  _alphaDec: 0.002 * Math.round(randRange(1,4)),
+    	  _grabColor: function(){
+    	    this.pixelData = _contextSource.getImageData( this._x*2, this._y*2, 1, 1 ).data;
+      		this.colorArr = [this.pixelData[0], this.pixelData[1], this.pixelData[2]];
+    	  },
+    	  _setColor: function(){
+      		_context.fillStyle = 'rgba('+this.colorArr[0]+','+this.colorArr[1]+','+this.colorArr[2]+','+this._alpha+')';
+      		_context.fillRect(this._x, this._y, this._width, this._height);
+      		
+      		this._alpha -= this._alphaDec;
+      		if( this._alpha <= 0 ) {
+        		this._alpha = 0.4;   
+        		this._angle = randRange( 0, 360 );
+        		this._speed = randRange( 0.5, 2  );
+        		var randAttractor = Math.round(randRange( 0, _attractorArr.length-1));
+        		this._x = _attractorArr[randAttractor]._x;
+        	  this._y = _attractorArr[randAttractor]._y;
+        	  this._angle = _attractorArr[randAttractor]._angle;
+        		this._grabColor();
+      		}
+    	  }
+    	});
+    	_particleArr[_particleArr.length - 1]._grabColor();
+    }
+  };
+  
+  var createAttractors = function(){
+    var startX;
+    var startY;
+    var size = 100;
+    for( var i = 0; i < _numAttractors; i++ ) {
+      startX = randRange( 0, _width );
+      startY = randRange( 0, _height );
+    	_attractorArr.push({
+        // _speedX: randRange( 4, 8 ),
+        // _speedY: randRange( 4, 8 ),
+    	  _angle: randRange( 0, 360 ),
+    	  _speed: randRange( 10, 20  ),
+    	  _turnRadius: randRange( 0.6, 1.6 ),
+    	  _x: startX,
+    	  _y: startY,
+    	  _width: _width/30,
+    	  _height: _height/30,
+    	  _grabColor: function(){
+    	    this.pixelData = _contextSource.getImageData( this._x*2, this._y*2, 1, 1 ).data;
+      		this.colorArr = [this.pixelData[0], this.pixelData[1], this.pixelData[2]];
+    	  },
+    	  _setColor: function(){
+    	    _context.fillStyle = 'rgba('+this.colorArr[0]+','+this.colorArr[1]+','+this.colorArr[2]+',0.03)';
+      		_context.fillRect(this._x - this._width/2, this._y - this._height/2, this._width, this._height);
+    	  }
+    	});
+    	_attractorArr[_attractorArr.length - 1]._grabColor();
+    } 
+  };
+  
+  
+  // Action ------------------------------------------
+  var clearScene = function(){
+    _context.fillStyle = 'rgba(255,255,255,1)';
+    _context.fillRect(0, 0, _width, _height);
+  };
+  
+  var updateScene = function() {
+  	// move attractors
+    _context.fillStyle = 'rgba(200,100,200,0.1)';
+		moveTargets();
+    _context.fillStyle = 'rgba(200,100,200,1.0)';
+		moveParticles();
+  };
+  
+  var moveParticles = function() {
+  	// move particles towards closest attractor
+  	for( var i = 0; i < _particleArr.length; i++ ) {
+			// figure out which target we're closest to and get the angle to it
+			var attractorTargetIndex = getClosestAttractorForParticle( _particleArr[i] );
+			var angleToAttractor = getAngleToTarget( _particleArr[i]._x, _particleArr[i]._y, _attractorArr[attractorTargetIndex]._x, _attractorArr[attractorTargetIndex]._y );
+
+			// turn in the direction that's the shortest path to destination angle
+			if( whichWayToTurn( _particleArr[i]._angle, angleToAttractor ) == RIGHT ) {
+				turn( _particleArr[i]._turnRadius, _particleArr[i] );
+			} else if( whichWayToTurn( _particleArr[i]._angle, angleToAttractor ) == LEFT ) {
+				turn( -_particleArr[i]._turnRadius, _particleArr[i] );
+			}
+
+			// apply movement and draw sprite
+      updateSprite( _particleArr[i], _particleArr[i]._angle, _particleArr[i]._speed );
+		}
+  };
+  
+  var moveTargets = function() {
+  	for( var i = 0; i < _attractorArr.length; i++ ) {
+      // // wall detection
+      // if( _attractorArr[i]._x > _width - _attractorArr[i]._width ) _attractorArr[i]._speedX *= -1;
+      // if( _attractorArr[i]._x < 0 ) _attractorArr[i]._speedX *= -1;
+      // if( _attractorArr[i]._y > _height - _attractorArr[i]._height ) _attractorArr[i]._speedY *= -1;
+      // if( _attractorArr[i]._y < 0 ) _attractorArr[i]._speedY *= -1;
+
+  		// move sprite
+      // _attractorArr[i]._x += _attractorArr[i]._speedX;
+      // _attractorArr[i]._y += _attractorArr[i]._speedY;
+
+      // move attractors towards mouse
+      var angleToMouse = getAngleToTarget( _attractorArr[i]._x, _attractorArr[i]._y, _mouseX/2, _mouseY/2 );
+
+			// turn in the direction that's the shortest path to destination angle
+			if( whichWayToTurn( _attractorArr[i]._angle, angleToMouse ) == RIGHT ) {
+				turn( _attractorArr[i]._turnRadius, _attractorArr[i] );
+			} else if( whichWayToTurn( _attractorArr[i]._angle, angleToMouse ) == LEFT ) {
+				turn( -_attractorArr[i]._turnRadius, _attractorArr[i] );
+			}
+			
+  		_attractorArr[i]._grabColor();
+			updateSprite( _attractorArr[i], _attractorArr[i]._angle, _attractorArr[i]._speed );
+      // _context.fillRect(_attractorArr[i]._x - _attractorArr[i]._width/2, _attractorArr[i]._y - _attractorArr[i]._height/2, _attractorArr[i]._width, _attractorArr[i]._height);
+  	}
+  }
+  
+  var getClosestAttractorForParticle = function( particle ) {
+    var attractorTargetIndex = 0;
+		var minDist = _maxDist * 2;
+    for(var i = 0; i < _attractorArr.length; i++ ) {
+			// get distance between current particle & current attractor
+			var particleAttractorDistance = getDist( particle._x, particle._y, _attractorArr[i]._x, _attractorArr[i]._y );
+			// if closer, set closest index
+			if( particleAttractorDistance < minDist ) {
+				minDist = particleAttractorDistance;
+				attractorTargetIndex = i;
+			}
+		}
+		return attractorTargetIndex;
+  };
+  
+  // apply angle change to clip
+  var turn = function( degrees, sprite ) {
+  	sprite._angle += ( degrees * sprite._speed );
+  	sprite._angle = constrainAngle( sprite._angle );
+  };
+  
+  // apply angle change to clip
+  var updateSprite = function( sprite, angle, speed ) {
+  	// move particle towards target
+  	sprite._x += Math.sin(degreesToRadians(angle)) * speed;
+  	sprite._y += Math.cos(degreesToRadians(angle)) * speed * -1;
+
+  	// draw it - rotate in the direction of movement
+  	_context.save();
+  	_context.translate( sprite._x, sprite._y );
+    // _context.rotate(degreesToRadians(sprite._angle));
+    sprite._setColor();
+    // _context.fillRect( 0, 0, sprite._width, sprite._height );
+  	_context.restore();
+  };
+  
+  // figure out which way to turn, based on the shortest path
+  var whichWayToTurn = function( curAngle, targetAngle ) {
+  	// calculate the difference between the current angle and destination angle
+  	var angleDifference = Math.abs( curAngle - targetAngle );
+
+  	// figure out whether we need to turn left or right to get to the target
+  	if( curAngle > targetAngle ){
+  		if( angleDifference < 180){
+  			return LEFT;
+  		} else {
+  			return RIGHT;
+  		}
+  	} else {
+  		if( angleDifference < 180 ){
+  			return RIGHT;
+  		} else {
+  			return LEFT;
+  		}
+  	}
+  };
+	
+	function draw(){
+		// clear canvases
+    // clearScene();
+    updateScene();
+		setTimeout(function(){ draw(); },10);
+	}
+	setTimeout(function(){ draw(); },10);
+	</script>
+</body>
+</html>

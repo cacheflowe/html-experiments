@@ -1,0 +1,372 @@
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>Canvas Cubes</title>
+  <style type="text/css" media="screen">
+    body {
+      background-color: black;
+      color: white;
+      font-family: 'Lucida Grande', Verdana, Arial;
+      font-size: 12px;
+      background-image: -webkit-gradient(radial,
+                            50% 500, 1,
+                            50% 500, 400,
+                            from(rgba(255, 255, 255, 0.3)),
+                            to(rgba(255, 255, 255, 0)));
+     background-repeat: no-repeat;
+    }
+
+    #container {
+      width: 100%;
+      height: 700px;
+      -webkit-perspective: 800; /* For compatibility with iPhone 3.0, we leave off the units here */
+      -webkit-perspective-origin: 50% 225px;
+    }
+    #stage {
+      width: 100%;
+      height: 100%;
+      -webkit-transition: -webkit-transform 2s;
+      -webkit-transform-style: preserve-3d;
+    }
+    
+    #shape {
+      position: relative;
+      top: 160px;
+      margin: 0 auto;
+      height: 200px;
+      width: 200px;
+      -webkit-transform-style: preserve-3d;
+    }
+    
+    .plane {
+      position: absolute;
+      height: 200px;
+      width: 200px;
+      -webkit-box-sizing: border-box;
+      background-color: rgba(255, 255, 255, 0.6);
+      -webkit-transition: -webkit-transform 2s, opacity 2s;
+      -webkit-backface-visibility: hidden;
+    }
+
+    #shape.backfaces .plane {
+      -webkit-backface-visibility: visible;
+    }
+    
+    #shape {
+      -webkit-animation: spin 18s infinite linear;
+    }
+
+    @-webkit-keyframes spin {
+      from { -webkit-transform: rotateX(0) rotateY(0); }
+      to   { -webkit-transform: rotateX(360deg) rotateY(-360deg); }
+    }
+
+    /* ---------- cube styles ------------- */
+    .cube canvas {
+      opacity: 0.5;
+    }
+    .cube > .one {
+      -webkit-transform: scale3d(1.2, 1.2, 1.2) rotateX(90deg) translateZ(100px);
+    }
+    .cube > .two {
+      -webkit-transform: scale3d(1.2, 1.2, 1.2) translateZ(100px);
+    }
+    .cube > .three {
+      -webkit-transform: scale3d(1.2, 1.2, 1.2) rotateY(90deg) translateZ(100px);
+    }
+    .cube > .four {
+      -webkit-transform: scale3d(1.2, 1.2, 1.2) rotateY(180deg) translateZ(100px);
+    }
+    .cube > .five {
+      -webkit-transform: scale3d(1.2, 1.2, 1.2) rotateY(-90deg) translateZ(100px);
+    }
+    .cube > .six {
+      -webkit-transform: scale3d(1.2, 1.2, 1.2) rotateX(-90deg) translateZ(100px) rotate(180deg);
+    }
+  </style>
+  <script type="text/javascript" charset="utf-8">
+    function hasClassName(inElement, inClassName) {
+        var regExp = new RegExp('(?:^|\\s+)' + inClassName + '(?:\\s+|$)');
+        return regExp.test(inElement.className);
+    }
+
+    function addClassName(inElement, inClassName) {
+        if (!hasClassName(inElement, inClassName))
+            inElement.className = [inElement.className, inClassName].join(' ');
+    }
+
+    function removeClassName(inElement, inClassName) {
+        if (hasClassName(inElement, inClassName)) {
+            var regExp = new RegExp('(?:^|\\s+)' + inClassName + '(?:\\s+|$)', 'g');
+            var curClasses = inElement.className;
+            inElement.className = curClasses.replace(regExp, ' ');
+        }
+    }
+
+    function toggleClassName(inElement, inClassName) {
+        if (hasClassName(inElement, inClassName)) removeClassName(inElement, inClassName);
+        else addClassName(inElement, inClassName);
+    }
+
+    function toggleShape() {
+      var shape = document.getElementById('shape');
+      if (hasClassName(shape, 'ring')) {
+        removeClassName(shape, 'ring');
+        addClassName(shape, 'cube');
+      } else {
+        removeClassName(shape, 'cube');
+        addClassName(shape, 'ring');
+      }
+      
+      // Move the ring back in Z so it's not so in-your-face.
+      var stage = document.getElementById('stage');
+      if (hasClassName(shape, 'ring'))
+        stage.style.webkitTransform = 'translateZ(-200px)';
+      else
+        stage.style.webkitTransform = '';
+    }
+    
+    function toggleBackfaces() {
+      var backfacesVisible = document.getElementById('backfaces').checked;
+      var shape = document.getElementById('shape');
+      if (backfacesVisible)
+        addClassName(shape, 'backfaces');
+      else
+        removeClassName(shape, 'backfaces');
+    }
+  </script>
+</head>
+<body>
+
+  <!-- <div class="controls">
+    <div><button onclick="toggleShape()">Toggle Shape</button></div>
+    <div><input type="checkbox" id="backfaces" onclick="toggleBackfaces()" checked><label for="backfaces">Backfaces visible</label></div>
+  </div> -->
+
+  <div id="container">
+    <div id="stage">
+      <div id="shape" class="cube backfaces">
+        <canvas width="200" height="200" id="c1" class="plane one">1</canvas>
+        <canvas width="200" height="200" id="c2" class="plane two">2</canvas>
+        <canvas width="200" height="200" id="c3" class="plane three">3</canvas>
+        <canvas width="200" height="200" id="c4" class="plane four">4</canvas>
+        <canvas width="200" height="200" id="c5" class="plane five">5</canvas>
+        <canvas width="200" height="200" id="c6" class="plane six">6</canvas>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+	// MathUtils ------------------------------------------
+  var getDist = function(x1,y1,x2,y2) {
+  	return Math.sqrt( Math.pow(x1-x2,2) + Math.pow(y1-y2,2) );
+  };
+
+  // get the angle fron current coordinate to target coordinate
+  var getAngleToTarget = function(x1,y1,x2,y2) {
+  	return constrainAngle( -Math.atan2( x1 - x2, y1 - y2 ) * 180 / Math.PI );
+  };
+
+  // keep an angle between 0-360
+  var constrainAngle = function( angle ) {
+  	if( angle < 0 ) return angle + 360;
+  	if( angle > 360 ) return angle - 360;
+  	return angle;
+  };
+  
+  var randRange = function( min, max ) {		
+  	return Math.random() * ( max - min ) + min;
+  };
+
+  var degreesToRadians = function( d ) {
+  	return d * ( Math.PI / 180 );
+  };
+
+  var radiansToDegrees = function( r ) {
+  	return r * ( 180 / Math.PI );
+  };
+  
+	
+	// Sketch ------------------------------------------	
+	var _context1 = document.getElementById("c1").getContext("2d");
+	var _context2 = document.getElementById("c2").getContext("2d");
+	var _context3 = document.getElementById("c3").getContext("2d");
+	var _context4 = document.getElementById("c4").getContext("2d");
+	var _context5 = document.getElementById("c5").getContext("2d");
+	var _context6 = document.getElementById("c6").getContext("2d");
+	var _width = 200;
+	var _height = 200;
+		
+	var LEFT = 0;
+	var RIGHT = 1;
+	
+	var _maxDist = getDist(0,0,_width,_height);
+	var _numParticles = 50;
+	var _numAttractors = 10;
+  var _particleArr = [];
+  var _attractorArr = [];
+
+  var init = function(){
+    createParticles();
+    createAttractors();
+  };
+ 
+  var createParticles = function(){
+    var startX;
+    var startY;
+    for( var i = 0; i < _numParticles; i++ ) {
+      startX = randRange( 0, _width );
+      startY = randRange( 0, _height );
+    	_particleArr.push({
+    	  _angle: randRange( 0, 360 ),
+    	  _speed: randRange( 1, 4 ),
+    	  _x: startX,
+    	  _y: startY,
+    	  _turnRadius: randRange( .5, 7 ),
+    	  _lifeSpan: randRange( 1000, 5500 ),
+    	  _width: 1,
+    	  _height: 7
+    	});
+    }
+  };
+  
+  var createAttractors = function(){
+    var startX;
+    var startY;
+    var size = 10;
+    for( var i = 0; i < _numAttractors; i++ ) {
+      startX = randRange( 0, _width - size );
+      startY = randRange( 0, _height - size );
+    	_attractorArr.push({
+    	  _speedX: randRange( -8, 8 ),
+    	  _speedY: randRange( -8, 8 ),
+    	  _x: startX,
+    	  _y: startY,
+    	  _width: size,
+    	  _height: size
+    	});
+    } 
+  };
+  
+  
+  // Action ------------------------------------------
+  var clearScene = function(){
+    for(var i=0; i<6; i++) {
+      window['_context'+(i+1)].fillStyle = 'rgba(255,255,255,0.1)';
+      window['_context'+(i+1)].fillRect(0, 0, _width, _height);
+    }
+  };
+  
+  var updateScene = function() {
+  	// move attractors
+  	for(var i=0; i<6; i++) window['_context'+(i+1)].fillStyle = 'rgba(200,100,200,0.1)';
+		moveTargets();
+  	for(var i=0; i<6; i++) window['_context'+(i+1)].fillStyle = 'rgba(200,100,200,1.0)';
+		moveParticles();
+  };
+  
+  var moveParticles = function() {
+  	// move particles towards closest attractor
+  	for( var i = 0; i < _particleArr.length; i++ ) {
+			// figure out which target we're closest to and get the angle to it
+			var attractorTargetIndex = getClosestAttractorForParticle( _particleArr[i] );
+			var angleToAttractor = getAngleToTarget( _particleArr[i]._x, _particleArr[i]._y, _attractorArr[attractorTargetIndex]._x, _attractorArr[attractorTargetIndex]._y );
+
+			// turn in the direction that's the shortest path to destination angle
+			if( whichWayToTurn( _particleArr[i]._angle, angleToAttractor ) == RIGHT ) {
+				turn( _particleArr[i]._turnRadius, _particleArr[i] );
+			} else if( whichWayToTurn( _particleArr[i]._angle, angleToAttractor ) == LEFT ) {
+				turn( -_particleArr[i]._turnRadius, _particleArr[i] );
+			}
+
+			// apply movement and draw sprite
+			updateSprite( _particleArr[i], _particleArr[i]._angle, _particleArr[i]._speed );
+		}
+  };
+  
+  var moveTargets = function() {
+  	for( var i = 0; i < _attractorArr.length; i++ ) {
+  		// wall detection
+  		if( _attractorArr[i]._x > _width - _attractorArr[i]._width ) _attractorArr[i]._speedX *= -1;
+  		if( _attractorArr[i]._x < 0 ) _attractorArr[i]._speedX *= -1;
+  		if( _attractorArr[i]._y > _height - _attractorArr[i]._height ) _attractorArr[i]._speedY *= -1;
+  		if( _attractorArr[i]._y < 0 ) _attractorArr[i]._speedY *= -1;
+
+  		// move sprite
+  		_attractorArr[i]._x += _attractorArr[i]._speedX;
+  		_attractorArr[i]._y += _attractorArr[i]._speedY;
+  		
+      // for(var i=0; i<6; i++) window['_context'+(i+1)].fillRect(_attractorArr[i]._x - _attractorArr[i]._width/2, _attractorArr[i]._y - _attractorArr[i]._height/2, _attractorArr[i]._width, _attractorArr[i]._height);
+  	}
+  }
+  
+  var getClosestAttractorForParticle = function( particle ) {
+    var attractorTargetIndex = 0;
+		var minDist = _maxDist * 2;
+    for(var i = 0; i < _attractorArr.length; i++ ) {
+			// get distance between current particle & current attractor
+			var particleAttractorDistance = getDist( particle._x, particle._y, _attractorArr[i]._x, _attractorArr[i]._y );
+			// if closer, set closest index
+			if( particleAttractorDistance < minDist ) {
+				minDist = particleAttractorDistance;
+				attractorTargetIndex = i;
+			}
+		}
+		return attractorTargetIndex;
+  };
+  
+  // apply angle change to clip
+  var turn = function( degrees, sprite ) {
+  	sprite._angle += ( degrees * sprite._speed );
+  	sprite._angle = constrainAngle( sprite._angle );
+  };
+  
+  // apply angle change to clip
+  var updateSprite = function( sprite, angle, speed ) {
+  	// move particle towards target
+  	sprite._x += Math.sin(degreesToRadians(angle)) * speed;
+  	sprite._y += Math.cos(degreesToRadians(angle)) * speed * -1;
+
+  	// draw it - rotate in the direction of movement
+  	for(var i=0; i<6; i++) window['_context'+(i+1)].save();
+  	for(var i=0; i<6; i++) window['_context'+(i+1)].translate( sprite._x, sprite._y );
+    for(var i=0; i<6; i++) window['_context'+(i+1)].rotate(degreesToRadians(sprite._angle));
+  	for(var i=0; i<6; i++) window['_context'+(i+1)].fillRect( 0, 0, sprite._width, sprite._height );
+  	for(var i=0; i<6; i++) window['_context'+(i+1)].restore();
+  };
+  
+  // figure out which way to turn, based on the shortest path
+  var whichWayToTurn = function( curAngle, targetAngle ) {
+  	// calculate the difference between the current angle and destination angle
+  	var angleDifference = Math.abs( curAngle - targetAngle );
+
+  	// figure out whether we need to turn left or right to get to the target
+  	if( curAngle > targetAngle ){
+  		if( angleDifference < 180){
+  			return LEFT;
+  		} else {
+  			return RIGHT;
+  		}
+  	} else {
+  		if( angleDifference < 180 ){
+  			return RIGHT;
+  		} else {
+  			return LEFT;
+  		}
+  	}
+  };
+	
+	init();
+	
+	function draw(){
+		// clear canvases
+    clearScene();
+    updateScene();
+    setTimeout(function(){ draw(); },33);
+	}
+	setTimeout(function(){ draw(); },33);
+	</script>
+	
+  
+</body>
+</html>

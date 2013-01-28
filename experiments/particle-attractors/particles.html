@@ -1,0 +1,221 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<title>Canvas Particles</title>
+</head>
+
+<body>
+	<canvas id="draw" width="500" height="500"></canvas>
+	<br/>
+	<a href="javascript:window.location.reload()">RELOAD</a>
+	
+	<script>
+	// MathUtils ------------------------------------------
+  var getDist = function(x1,y1,x2,y2) {
+  	return Math.sqrt( Math.pow(x1-x2,2) + Math.pow(y1-y2,2) );
+  };
+
+  // get the angle fron current coordinate to target coordinate
+  var getAngleToTarget = function(x1,y1,x2,y2) {
+  	return constrainAngle( -Math.atan2( x1 - x2, y1 - y2 ) * 180 / Math.PI );
+  };
+
+  // keep an angle between 0-360
+  var constrainAngle = function( angle ) {
+  	if( angle < 0 ) return angle + 360;
+  	if( angle > 360 ) return angle - 360;
+  	return angle;
+  };
+  
+  var randRange = function( min, max ) {		
+  	return Math.random() * ( max - min ) + min;
+  };
+
+  var degreesToRadians = function( d ) {
+  	return d * ( Math.PI / 180 );
+  };
+
+  var radiansToDegrees = function( r ) {
+  	return r * ( 180 / Math.PI );
+  };
+  
+	
+	// Sketch ------------------------------------------	
+	var canvas = document.getElementById("draw");
+	var _context = canvas.getContext("2d");
+	var _width = 500;
+	var _height = 500;
+	
+	canvas.width = _width;
+	canvas.height = _height;
+	canvas.style.border = '1px solid black';
+	
+	var LEFT = 0;
+	var RIGHT = 1;
+	
+	var _maxDist = getDist(0,0,_width,_height);
+	var _numParticles = 500;
+	var _numAttractors = 10;
+  var _particleArr = [];
+  var _attractorArr = [];
+
+  var init = function(){
+    createParticles();
+    createAttractors();
+  };
+ 
+  var createParticles = function(){
+    var startX;
+    var startY;
+    for( var i = 0; i < _numParticles; i++ ) {
+      startX = randRange( 0, _width );
+      startY = randRange( 0, _height );
+    	_particleArr.push({
+    	  _angle: randRange( 0, 360 ),
+    	  _speed: randRange( 1, 4 ),
+    	  _x: startX,
+    	  _y: startY,
+    	  _turnRadius: randRange( .5, 7 ),
+    	  _lifeSpan: randRange( 1000, 5500 ),
+    	  _width: 1,
+    	  _height: 7
+    	});
+    }
+  };
+  
+  var createAttractors = function(){
+    var startX;
+    var startY;
+    var size = 10;
+    for( var i = 0; i < _numAttractors; i++ ) {
+      startX = randRange( 0, _width - size );
+      startY = randRange( 0, _height - size );
+    	_attractorArr.push({
+    	  _speedX: randRange( -8, 8 ),
+    	  _speedY: randRange( -8, 8 ),
+    	  _x: startX,
+    	  _y: startY,
+    	  _width: size,
+    	  _height: size
+    	});
+    } 
+  };
+  
+  
+  // Action ------------------------------------------
+  var clearScene = function(){
+    _context.fillStyle = 'rgba(255,255,255,0.1)';
+    _context.fillRect(0, 0, _width, _height);
+  };
+  
+  var updateScene = function() {
+  	// move attractors
+    _context.fillStyle = 'rgba(200,100,200,0.1)';
+		moveTargets();
+    _context.fillStyle = 'rgba(200,100,200,1.0)';
+		moveParticles();
+  };
+  
+  var moveParticles = function() {
+  	// move particles towards closest attractor
+  	for( var i = 0; i < _particleArr.length; i++ ) {
+			// figure out which target we're closest to and get the angle to it
+			var attractorTargetIndex = getClosestAttractorForParticle( _particleArr[i] );
+			var angleToAttractor = getAngleToTarget( _particleArr[i]._x, _particleArr[i]._y, _attractorArr[attractorTargetIndex]._x, _attractorArr[attractorTargetIndex]._y );
+
+			// turn in the direction that's the shortest path to destination angle
+			if( whichWayToTurn( _particleArr[i]._angle, angleToAttractor ) == RIGHT ) {
+				turn( _particleArr[i]._turnRadius, _particleArr[i] );
+			} else if( whichWayToTurn( _particleArr[i]._angle, angleToAttractor ) == LEFT ) {
+				turn( -_particleArr[i]._turnRadius, _particleArr[i] );
+			}
+
+			// apply movement and draw sprite
+			updateSprite( _particleArr[i], _particleArr[i]._angle, _particleArr[i]._speed );
+		}
+  };
+  
+  var moveTargets = function() {
+  	for( var i = 0; i < _attractorArr.length; i++ ) {
+  		// wall detection
+  		if( _attractorArr[i]._x > _width - _attractorArr[i]._width ) _attractorArr[i]._speedX *= -1;
+  		if( _attractorArr[i]._x < 0 ) _attractorArr[i]._speedX *= -1;
+  		if( _attractorArr[i]._y > _height - _attractorArr[i]._height ) _attractorArr[i]._speedY *= -1;
+  		if( _attractorArr[i]._y < 0 ) _attractorArr[i]._speedY *= -1;
+
+  		// move sprite
+  		_attractorArr[i]._x += _attractorArr[i]._speedX;
+  		_attractorArr[i]._y += _attractorArr[i]._speedY;
+  		
+      _context.fillRect(_attractorArr[i]._x - _attractorArr[i]._width/2, _attractorArr[i]._y - _attractorArr[i]._height/2, _attractorArr[i]._width, _attractorArr[i]._height);
+  	}
+  }
+  
+  var getClosestAttractorForParticle = function( particle ) {
+    var attractorTargetIndex = 0;
+		var minDist = _maxDist * 2;
+    for(var i = 0; i < _attractorArr.length; i++ ) {
+			// get distance between current particle & current attractor
+			var particleAttractorDistance = getDist( particle._x, particle._y, _attractorArr[i]._x, _attractorArr[i]._y );
+			// if closer, set closest index
+			if( particleAttractorDistance < minDist ) {
+				minDist = particleAttractorDistance;
+				attractorTargetIndex = i;
+			}
+		}
+		return attractorTargetIndex;
+  };
+  
+  // apply angle change to clip
+  var turn = function( degrees, sprite ) {
+  	sprite._angle += ( degrees * sprite._speed );
+  	sprite._angle = constrainAngle( sprite._angle );
+  };
+  
+  // apply angle change to clip
+  var updateSprite = function( sprite, angle, speed ) {
+  	// move particle towards target
+  	sprite._x += Math.sin(degreesToRadians(angle)) * speed;
+  	sprite._y += Math.cos(degreesToRadians(angle)) * speed * -1;
+
+  	// draw it - rotate in the direction of movement
+  	_context.save();
+  	_context.translate( sprite._x, sprite._y );
+    _context.rotate(degreesToRadians(sprite._angle));
+  	_context.fillRect( 0, 0, sprite._width, sprite._height );
+  	_context.restore();
+  };
+  
+  // figure out which way to turn, based on the shortest path
+  var whichWayToTurn = function( curAngle, targetAngle ) {
+  	// calculate the difference between the current angle and destination angle
+  	var angleDifference = Math.abs( curAngle - targetAngle );
+
+  	// figure out whether we need to turn left or right to get to the target
+  	if( curAngle > targetAngle ){
+  		if( angleDifference < 180){
+  			return LEFT;
+  		} else {
+  			return RIGHT;
+  		}
+  	} else {
+  		if( angleDifference < 180 ){
+  			return RIGHT;
+  		} else {
+  			return LEFT;
+  		}
+  	}
+  };
+	
+	init();
+	
+	function draw(){
+		// clear canvases
+		clearScene();
+    updateScene();
+		setTimeout(function(){ draw(); },33);
+	}
+	setTimeout(function(){ draw(); },33);
+	</script>
+</body>
+</html>
