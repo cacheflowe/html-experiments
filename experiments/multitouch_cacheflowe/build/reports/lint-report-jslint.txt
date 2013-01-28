@@ -1,0 +1,18 @@
+
+jslint:./javascripts/debug.js:15:27:Expected '{' and instead saw 'minutes'.
+jslint:./javascripts/debug.js:26:13:Expected '{' and instead saw 'this'.
+
+jslint:./javascripts/multitouch.js:45:27:Use '!==' to compare with 'false'.
+jslint:./javascripts/multitouch.js:47:13:Expected '{' and instead saw 'this'.
+jslint:./javascripts/multitouch.js:59:53:Expected '{' and instead saw 'this'.
+jslint:./javascripts/multitouch.js:60:53:Expected '{' and instead saw 'this'.
+jslint:./javascripts/multitouch.js:64:4:Mixed spaces and tabs.
+jslint:./javascripts/multitouch.js:65:4:Mixed spaces and tabs.
+jslint:./javascripts/multitouch.js:65:17:Expected '{' and instead saw 'this'.
+jslint:./javascripts/multitouch.js:93:4:Mixed spaces and tabs.
+jslint:./javascripts/multitouch.js:94:4:Mixed spaces and tabs.
+jslint:./javascripts/multitouch.js:95:4:Mixed spaces and tabs.
+jslint:./javascripts/multitouch.js:206:4:Mixed spaces and tabs.
+jslint:./javascripts/multitouch.js:207:4:Mixed spaces and tabs.
+jslint:./javascripts/multitouch.js:208:4:Mixed spaces and tabs.
+
