@@ -1,8 +1,0 @@
-./javascripts/app_init.js
-./javascripts/debug.js
-./javascripts/lib/effects.js
-./javascripts/lib/prototype.js
-./javascripts/lib/scriptaculous.js
-./javascripts/min/app-min.js
-./javascripts/min/lib-min.js
-./javascripts/multitouch.js
