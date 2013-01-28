@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<!-- saved from url=(0080)http://localhost/html_research/webgl/three.js/examples/webgl_loader_obj_mtl.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Audio vertex displacement</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <style>
+      body {
+        font-family: Monospace;
+        background-color: #000;
+        color: #fff;
+        margin: 0px;
+        overflow: hidden;
+      }
+      #info {
+        color: #fff;
+        position: absolute;
+        top: 10px;
+        width: 100%;
+        text-align: center;
+        z-index: 100;
+        display:block;
+      }
+      #info a, .button { color: #f00; font-weight: bold; text-decoration: underline; cursor: pointer }
+    </style>
+  <style type="text/css"></style></head>
+
+  <body>
+    <script src="../../javascripts/three/three.min.js"></script>
+    <script src="../../javascripts/three/trackball-controls.js"></script>
+    <script src="../../javascripts/modeset/elastic-point-3.js"></script>
+    <script src="../../javascripts/modeset/sound_player.js"></script>
+    <script src="../../javascripts/vendor/perlin-noise.js"></script>
+
+
+    <script>
+
+      var AudioBall = function( color, audioFile, positionVec3 ) {
+        var geometry,
+            geometryDefault,
+            mesh,
+            meshDefault,
+            ballMaterial,
+            soundPlayer;
+
+        var vertex, vertexOrig, numVertices, vertexNoise;
+
+        var ballDivisor = 20;
+        var ballSize = 20;
+
+        // mesh material
+        ballMaterial = new THREE.MeshPhongMaterial({
+          color: color,
+          shininess: 100,
+          specular: 0xcccccc,
+          opacity: 1,
+          shading: THREE.SmoothShading,
+          blending: THREE.NormalBlending,
+          wireframe: false,
+          wireframeLinewidth: 1
+        });
+
+        // build geometry
+        geometry = new THREE.SphereGeometry(ballSize, ballDivisor, ballDivisor);
+        geometryDefault = new THREE.SphereGeometry(ballSize, ballDivisor, ballDivisor);
+
+        // build mesh and mesh origin
+        mesh = new THREE.Mesh( geometry, ballMaterial, 1);
+        meshDefault = new THREE.Mesh( geometryDefault, ballMaterial, 1);
+        mesh.castShadow = mesh.receiveShadow = true;
+        mesh.position = positionVec3;
+        scene.add( mesh );
+
+        // build audio player w/analysis
+        if( audioFile ) {
+          soundPlayer = new SoundPlayer( audioFile, null, null, mesh.geometry.vertices.length );
+          soundPlayer.setLoops(true);
+          soundPlayer.playSound();
+        }
+
+        // build elastic points
+        var elasticPoints = [];
+        numVertices = mesh.geometry.vertices.length;
+        for(var i=0; i < numVertices; i++) {
+          vertexOrig = meshDefault.geometry.vertices[i];
+          elasticPoints.push( new ElasticPoint( vertexOrig.x, vertexOrig.y, vertexOrig.z, 0.9, 0.5 ) );
+        }
+
+
+        // update methods
+        var update = function() {
+          numVertices = mesh.geometry.vertices.length;
+          var spectrum = soundPlayer.getAveragedSpectrum();
+
+          for(var i=0; i < numVertices; i++) {
+            vertex = mesh.geometry.vertices[i];
+            vertexOrig = meshDefault.geometry.vertices[i];
+            vertex.set( 
+              vertexOrig.x + vertexOrig.x * spectrum[i]/255,
+              vertexOrig.y + vertexOrig.y * spectrum[i]/255,
+              vertexOrig.z + vertexOrig.z * spectrum[i]/255
+            );
+          }
+          mesh.geometry.verticesNeedUpdate = true;
+        }
+
+        var deform = function() {
+          for(var i=0; i < mesh.geometry.vertices.length; i++) {
+            vertex = mesh.geometry.vertices[i];
+            vertexOrig = meshDefault.geometry.vertices[i];
+            vertex.set( 
+              vertexOrig.x + 3*Math.sin(frameCount*i),
+              vertexOrig.y + 3*Math.cos(frameCount*i),
+              vertexOrig.z + 3*Math.cos(frameCount*i)
+            );
+          }
+          mesh.geometry.verticesNeedUpdate = true;
+        }
+
+        var updateElastic = function() {
+          for(var i=0; i < mesh.geometry.vertices.length; i++) {
+            vertex = mesh.geometry.vertices[i];
+            vertexOrig = meshDefault.geometry.vertices[i];
+            elasticPoints[i].update();
+            vertex.set( 
+              elasticPoints[i].x(),
+              elasticPoints[i].y(),
+              elasticPoints[i].z()
+            );
+          }
+          mesh.geometry.verticesNeedUpdate = true;
+        }
+
+        var bumpElastic = function() {
+          var vertexNoiseMult = 0.04;
+          numVertices = mesh.geometry.vertices.length;
+          var index = Math.floor( Math.random() * numVertices );
+          var indexOffsetVertex;
+          for(var i=0; i < numVertices; i++) {
+            index++;
+            if(index >= numVertices) index = 0;
+            vertexOrig = meshDefault.geometry.vertices[i];
+            indexOffsetVertex = meshDefault.geometry.vertices[index];
+            vertexNoise = 0.5 * PerlinNoise.noise( indexOffsetVertex.x * vertexNoiseMult, indexOffsetVertex.y * vertexNoiseMult, indexOffsetVertex.z * vertexNoiseMult );
+            elasticPoints[i].setTarget( 
+              vertexOrig.x - vertexOrig.x * vertexNoise,
+              vertexOrig.y - vertexOrig.y * vertexNoise,
+              vertexOrig.z - vertexOrig.z * vertexNoise
+            );
+          }
+
+          setTimeout(function() {
+            // reset elastic vertices
+            for(var i=0; i < numVertices; i++) {
+              vertexOrig = meshDefault.geometry.vertices[i];
+              elasticPoints[i].setTarget( 
+                vertexOrig.x,
+                vertexOrig.y,
+                vertexOrig.z
+              );
+            }
+          }, 50);
+        };
+
+        return {
+          update: update,
+          deform: deform,
+          updateElastic: updateElastic,
+          bumpElastic: bumpElastic
+        };
+      }
+
+
+      var container, stats;
+      var camera, scene, renderer, frameCount;
+      var controls, ball1, ball2;
+      var mouseX = 0, mouseY = 0;
+      var windowHalfX = window.innerWidth / 2;
+      var windowHalfY = window.innerHeight / 2;
+
+      init();
+      animate();
+
+
+      function init() {
+
+        container = document.createElement( 'div' );
+        document.body.appendChild( container );
+
+        camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 2000 );
+        camera.position.z = 100;
+
+        controls = new THREE.TrackballControls( camera );
+        scene = new THREE.Scene();
+
+        var directionalLight = new THREE.DirectionalLight( 0xffffff );
+        directionalLight.position.set( 0, 0, 1 ).normalize();
+        scene.add( directionalLight );
+
+        var directionalLight = new THREE.DirectionalLight( 0xffffff );
+        directionalLight.position.set( 0, 0, -1 ).normalize();
+        scene.add( directionalLight );
+
+        //
+        renderer = new THREE.WebGLRenderer();
+        renderer.setSize( window.innerWidth, window.innerHeight );
+        container.appendChild( renderer.domElement );
+
+        frameCount = 0;
+ 
+        ball1 = new AudioBall( 0xff00ff, '../../media/audio/porta-note.mp3', new THREE.Vector3( -60, 0, 0 ) );
+        ball2 = new AudioBall( 0x00ffff, null, new THREE.Vector3( 60, 0, 0 ) );
+        ball3 = new AudioBall( 0xffff00, null, new THREE.Vector3( 0, 0, 0 ) );
+
+        window.addEventListener( 'resize', onWindowResize, false );
+      }
+
+      function onWindowResize() {
+        windowHalfX = window.innerWidth / 2;
+        windowHalfY = window.innerHeight / 2;
+
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+
+        renderer.setSize( window.innerWidth, window.innerHeight );
+      }
+
+      function animate() {
+        frameCount+=0.0001;
+
+        requestAnimationFrame( animate );
+        render();
+        controls.update();
+
+        ball1.update();
+        ball2.deform();
+        ball3.updateElastic();
+
+        if(Math.round(frameCount * 10000) % 50 == 0) {
+          ball3.bumpElastic();
+        }
+      }
+
+      function render() {
+        renderer.render( scene, camera );
+      }
+
+    </script><div><canvas width="1707" height="922" style="width: 1707px; height: 922px;"></canvas></div>
+</body>
+</html>

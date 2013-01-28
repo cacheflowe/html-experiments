@@ -1,6 +1,6 @@
 <html>
 <head>
-<title>Pointillate</title>
+<title></title>
 </head>
 <body>
 <?
