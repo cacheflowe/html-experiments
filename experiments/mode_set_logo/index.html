@@ -5,109 +5,18 @@
 </head>
 
 <body>
-	<canvas id="e" width="500" height="500"></canvas>
+	<div id="logo"></div>
+	<script type="text/javascript" src="logo.js"></script>
 	<script>
-	var canvas = document.getElementById("e");
-	var context = canvas.getContext("2d");
-	
-	context.fillStyle = 'rgba(0,188,228,255)';
-	context.strokeStyle = '#000';
-	context.lineWidth = 0;
-	
-	var range = 80;
-	var fric = .65;
-	var accel = .4;
-	
-	function Point( x, y ){
-		var self = this;
-
-		// base location
-		this.x = x;
-		this.y = y;
-		
-		// current location
-		this.curX = 250;
-		this.curY = 250;
-		this.targetX = x;
-		this.targetY = y;
-		this.xspeed = 0;
-		this.yspeed = 0;
-		
-		this.recalcDisplacement = function() {
-			// calculate displacement based on mouse distance from point base
-			var xdiff = self.x - mouseX;
-			var ydiff = self.y - mouseY;
-			var d = Math.sqrt( xdiff*xdiff + ydiff*ydiff );
-			if ( d < range ) {
-				self.targetX = self.x-(xdiff-range*(xdiff/d));
-				self.targetY = self.y-(ydiff-range*(ydiff/d));
-			} else {
-				self.targetX = self.x;
-				self.targetY = self.y;
-			}
-			// elastically move based on current target poisition vs current position
-			self.xspeed = ((self.targetX-self.curX)*accel+self.xspeed)*fric;
-			self.yspeed = ((self.targetY-self.curY)*accel+self.yspeed)*fric;
-			self.curX += self.xspeed;
-			self.curY += self.yspeed;
-		};
-	}
-	
-	var points = [];
-	var numPoints;
-	function createPoints(){
-		// set up hard-coded points
-		points.push( new Point( 74,  173 ) );
-		points.push( new Point( 74,  331 ) );
-		points.push( new Point( 118, 395 ) );
-		points.push( new Point( 118, 322 ) );
-		points.push( new Point( 218, 466 ) );
-		points.push( new Point( 218, 363 ) );
-		points.push( new Point( 246, 329 ) );
-		points.push( new Point( 246, 487 ) );
-		points.push( new Point( 347, 391 ) );
-		points.push( new Point( 347, 311 ) );
-		points.push( new Point( 369, 291 ) );
-		points.push( new Point( 369, 334 ) );
-		points.push( new Point( 424, 284 ) );
-		points.push( new Point( 424, 11  ) );
-		points.push( new Point( 369, 64  ) );
-		points.push( new Point( 369, 142 ) );
-		points.push( new Point( 347, 163 ) );
-		points.push( new Point( 347, 119 ) );
-		points.push( new Point( 295, 168 ) );
-		points.push( new Point( 201, 32  ) );
-		points.push( new Point( 201, 168 ) );
-		points.push( new Point( 103, 26  ) );
-		points.push( new Point( 103, 141 ) );
-
-		numPoints = points.length;
-	}
-	createPoints();
-	
-	function draw(){
-		
-		context.clearRect( 0, 0, 500, 500 );
-		context.beginPath();
-	    context.moveTo( points[0].curX, points[0].curY );
-		
-		for( var i=0; i < numPoints; i++ ) {
-			points[i].recalcDisplacement();
-			if( i > 0 ) context.lineTo( points[i].curX, points[i].curY );
+		var isCanvasSupported = function() {
+			var elem = document.createElement('canvas');
+			return !!(elem.getContext && elem.getContext('2d'));
 		}
-	    context.fill();
 		
-		setTimeout(function(){ draw(); },30);
-	}
-	setTimeout(function(){ draw(); },30);
-	
-	canvas.addEventListener('mousemove',onMouseMoved,false);
-	var mouseX = 0;
-	var mouseY = 0;
-	function onMouseMoved(e){
-		mouseX = e.clientX;
-		mouseY = e.clientY;
-	}
+		if( isCanvasSupported() ) { 
+			var logoContainer = document.getElementById("logo");
+			var logo = new Logo( logoContainer, 43 );
+		}
 	</script>
 </body>
 </html>
