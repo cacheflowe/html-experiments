@@ -1,0 +1,95 @@
+<html>
+  <head>
+    <title>Hearts</title>
+    <meta property="og:site_name" content="HTML Experiments by CacheFlowe"/> 
+    <meta property="og:title" content="Hearts"/> 
+    <meta property="og:description" content="<3 Hearts for Dawn <3"/> 
+    <meta property="og:type" content="website"/> 
+    <meta property="og:url" content="http://cacheflowe.github.com/html-experiments/experiment/hearts/"/> 
+    <meta property="og:image" content="http://cacheflowe.github.com/html-experiments/experiment/hearts/preview.png"/> 
+    <meta property="fb:admins" content="1080085161"/>
+    <style>
+      html, body {
+        background: black;
+        margin: 0px;
+        padding: 0px;
+        overflow: hidden;
+      }
+      canvas {
+        background: black;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="myCanvas" width="100" height="100"></canvas>
+    <script type="text/javascript" src="../../javascripts/modeset/canvas_util.js"></script>
+    <script>
+      var drawHeart = function( context, x, y, size, rotation ) {
+        // set up bezier points & handles
+        var top = -1 * size,
+            bottom = 3 * size,
+            crtl1x = 5.3 * size,
+            crtl1y = 0 * size,
+            crtl2x = 2.6 * size,
+            crtl2y = -5 * size;
+
+        // move to center of screen
+        context.save();
+        context.translate( x, y );
+        context.rotate(rotation);
+
+        // start drawing from bottom of heart
+        context.beginPath();
+        context.moveTo(0, bottom);
+
+        // draw 2 halves with bezier curve
+        context.bezierCurveTo( 
+          -crtl1x, crtl1y, 
+          -crtl2x, crtl2y,
+          0, top
+        );
+        context.moveTo(0, bottom);
+        context.bezierCurveTo( 
+          crtl1x, crtl1y, 
+          crtl2x, crtl2y,
+          0, top
+        );
+
+        // fill the curves
+        context.fill();
+        context.restore();
+      };
+
+      // setup canvas
+      var canvas = document.getElementById('myCanvas');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      var context = canvas.getContext('2d');
+
+      // begin incrementing
+      var startInc = 0;
+      var incStep = -1;
+      var frameCount = 0;
+      var numHearts = 300;
+
+      // loop it / draw hearts
+      setInterval(function(){
+        frameCount++;
+        incStep = 30 + 25 * Math.cos(frameCount/150);
+        numHearts = 300 + 150 * Math.cos(frameCount/200);
+        startInc += incStep;
+        var colorInc = 255 / numHearts;
+        for( var i=numHearts; i > 0; i-=incStep ){
+          context.fillStyle = 'rgba('+ Math.round(startInc + i * colorInc) % 255 +',0,0,0.5)';
+          drawHeart( context, canvas.width/2, canvas.height/2, i, Math.sin((startInc + i)/100)/4 );
+        }
+      }, 50);
+
+      // save to image
+      canvas.addEventListener('click',function(){
+        CanvasUtil.saveCanvas( context );
+      },false);
+
+    </script>
+  </body>
+</html>
