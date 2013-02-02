@@ -1,7 +1,6 @@
 <?php
 
 $filename = $_REQUEST['file'];
-$imgfile = "test.png";
 
 $handle = fopen($filename, "r");
 
