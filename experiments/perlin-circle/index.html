@@ -1,0 +1,75 @@
+<html>
+  <head>
+    <style>
+      html, body {
+        background: white;
+        margin: 0px;
+        padding: 0px;
+        overflow: hidden;
+      }
+      canvas {
+        background: white;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas" width="400" height="400"></canvas>
+    <script type="text/javascript" src="../../javascripts/modeset/canvas_util.js"></script>
+    <script type="text/javascript" src="../../javascripts/vendor/perlin-noise.js"></script>
+    <script>
+      // circle drawing
+      var drawCircle = function( context, x, y, size, rotation ) {
+        context.save();
+        // x = canvas.width/2;
+        // y = canvas.height/2;
+        // rotation = 0;
+        context.translate( x, y );
+        context.rotate(rotation);
+
+        context.beginPath();
+        for( var i=0; i < numCircleSegments; i++ ) {
+          var radius = size * 5 * PerlinNoise.noise( Math.sin((frameCount+i*5)/60), Math.cos((frameCount+i*1)/120), Math.sin((frameCount+i*3)/90) );
+          var radians = i * segmentRadians;
+          if( i == 0 ) context.moveTo( Math.sin( radians ) * radius, Math.cos( radians ) * radius );
+          context.lineTo( Math.sin( radians ) * radius, Math.cos( radians ) * radius );
+        }
+        
+        context.closePath();
+        context.stroke();
+        // context.fill();
+
+        context.restore();
+      };
+
+      // canvas setup
+      var canvas = document.getElementById('canvas');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      var context = canvas.getContext('2d');
+
+      // draw props
+      var startInc = 0;
+      var frameCount = 0;
+      var TWO_PI = Math.PI * 2;
+      var numCircleSegments = 60;
+      var segmentRadians = TWO_PI / numCircleSegments;
+
+      // frame loop
+      setInterval(function(){
+        frameCount++;
+        startInc += 1;
+        
+        // context.strokeStyle = 'rgba('+ Math.round(startInc + i * colorInc) % 255 +',0,0,0.5)';
+        context.strokeStyle = 'rgba(0,0,0,0.1)';
+        drawCircle( context, canvas.width/2 + Math.sin(frameCount/100)*300, canvas.height/2 + Math.sin(frameCount/120)*300, 50+25*Math.sin(frameCount/280), Math.sin((frameCount)/400) );
+      }, 16);
+
+      // canvas saving
+      canvas.addEventListener('click',function(){
+        CanvasUtil.saveCanvas( context );
+      },false);
+
+
+    </script>
+  </body>
+</html>
