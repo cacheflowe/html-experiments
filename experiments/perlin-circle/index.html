@@ -15,6 +15,7 @@
   <body>
     <canvas id="canvas" width="400" height="400"></canvas>
     <script type="text/javascript" src="../../javascripts/modeset/canvas_util.js"></script>
+    <script type="text/javascript" src="../../javascripts/modeset/elastic-point-3.js"></script>
     <script type="text/javascript" src="../../javascripts/vendor/perlin-noise.js"></script>
     <script>
       
@@ -39,6 +40,8 @@
         var posX = canvas.height;
         var speedX = Math.random() * 1 - 0.5;
         var speedXPerlinInc = 0;
+
+        var elasticLoc = new ElasticPoint( canvas.width/2, canvas.height, 0, 0.4, 0.1 );
         
         // circle drawing
         var drawCircle = function( context, x, y, size, rotation ) {
@@ -66,31 +69,36 @@
         };
 
         var update = function() {
+          elasticLoc.setTarget( mouseX, mouseY );
+          elasticLoc.update();
+
           frameCount++;
           startInc += 1;
 
-          rotationPerlinInc += 0.01;
+          rotationPerlinInc += 0.001;
           rotation = TWO_PI * PerlinNoise.noise( Math.sin(rotationPerlinInc), Math.cos(rotationPerlinInc), Math.sin(rotationPerlinInc) )
 
           radiusPerlinInc += 0.0001;
           radiusBase += 0.025;
           radius = radiusBase + (20 * PerlinNoise.noise( Math.sin(radiusPerlinInc), Math.cos(radiusPerlinInc), Math.sin(radiusPerlinInc) ) )
 
-          speedYPerlinInc += 0.0001;
-          posY += speedY + 1 - 2 * PerlinNoise.noise( Math.sin(speedYPerlinInc), Math.cos(speedYPerlinInc), Math.sin(speedYPerlinInc) )
-          if(posY < 0) {
-            posY = canvas.height;
-            radiusBase = 1;
-            numCircleSegments = 10 + Math.random() * 80;
-            segmentRadians = TWO_PI / numCircleSegments;
-          }
+          // speedYPerlinInc += 0.0001;
+          // posY += speedY + 1 - 2 * PerlinNoise.noise( Math.sin(speedYPerlinInc), Math.cos(speedYPerlinInc), Math.sin(speedYPerlinInc) )
+          // if(posY < 0) {
+          //   posY = canvas.height;
+          //   radiusBase = 1;
+          //   numCircleSegments = 10 + Math.random() * 80;
+          //   segmentRadians = TWO_PI / numCircleSegments;
+          // }
+          posY = elasticLoc.y();
 
-          speedXPerlinInc += 0.0001;
+          // speedXPerlinInc += 0.0001;
           // posX += speedX * 0 - PerlinNoise.noise( Math.sin(speedXPerlinInc), Math.cos(speedXPerlinInc), Math.sin(speedXPerlinInc) )
-          posX = canvas.width/2 + Math.sin( PerlinNoise.noise( Math.sin(speedXPerlinInc), Math.cos(speedXPerlinInc), Math.sin(speedXPerlinInc) ) * 50 * Math.sin(speedXPerlinInc * 2)) * 100
+          // posX = canvas.width/2 + Math.sin( PerlinNoise.noise( Math.sin(speedXPerlinInc), Math.cos(speedXPerlinInc), Math.sin(speedXPerlinInc) ) * 50 * Math.sin(speedXPerlinInc * 2)) * 100
+          posX = elasticLoc.x();
 
           // context.strokeStyle = 'rgba('+ Math.round(startInc + i * colorInc) % 255 +',0,0,0.5)';
-          context.strokeStyle = 'rgba(0,0,0,0.02)';
+          context.strokeStyle = 'rgba(0,0,0,0.04)';
           drawCircle( context, posX, posY, radius, rotation );
 
         };
@@ -108,11 +116,15 @@
       canvas.height = window.innerHeight;
       var context = canvas.getContext('2d');
 
-      var circle = new PerlinCircle();
+      var circles = [
+        new PerlinCircle(),
+        new PerlinCircle()
+      ];
 
       // frame loop
       setInterval(function(){
-        circle.update();
+        for(var i=0; i < circles.length; i++)
+          circles[i].update();
       }, 16);
 
       document.addEventListener( 'mousemove', onDocumentMouseMove, false );
