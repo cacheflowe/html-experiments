@@ -17,29 +17,90 @@
     <script type="text/javascript" src="../../javascripts/modeset/canvas_util.js"></script>
     <script type="text/javascript" src="../../javascripts/vendor/perlin-noise.js"></script>
     <script>
-      // circle drawing
-      var drawCircle = function( context, x, y, size, rotation ) {
-        context.save();
-        // x = canvas.width/2;
-        // y = canvas.height/2;
-        // rotation = 0;
-        context.translate( x, y );
-        context.rotate(rotation);
+      
+      var frameCount = 0;
+      var TWO_PI = Math.PI * 2;
+      var mouseX = window.innerWidth / 2;
+      var mouseY = window.innerHeight / 2;
 
-        context.beginPath();
-        for( var i=0; i < numCircleSegments; i++ ) {
-          var radius = size * 5 * PerlinNoise.noise( Math.sin((frameCount+i*5)/60), Math.cos((frameCount+i*1)/120), Math.sin((frameCount+i*3)/90) );
-          var radians = i * segmentRadians;
-          if( i == 0 ) context.moveTo( Math.sin( radians ) * radius, Math.cos( radians ) * radius );
-          context.lineTo( Math.sin( radians ) * radius, Math.cos( radians ) * radius );
-        }
+      var PerlinCircle = function() {
+        // draw props
+        var startInc = 0;
+        var numCircleSegments = 10 + Math.random() * 80;
+        var segmentRadians = TWO_PI / numCircleSegments;
+        var rotation = 0;
+        var rotationPerlinInc = 0;
+        var radiusBase = 1;
+        var radius = 0;
+        var radiusPerlinInc = 0;
+        var posY = canvas.height;
+        var speedY = -1;
+        var speedYPerlinInc = 0;
+        var posX = canvas.height;
+        var speedX = Math.random() * 1 - 0.5;
+        var speedXPerlinInc = 0;
         
-        context.closePath();
-        context.stroke();
-        // context.fill();
+        // circle drawing
+        var drawCircle = function( context, x, y, size, rotation ) {
+          context.save();
+          // x = canvas.width/2;
+          // x = frameCount * 1.5;
+          // y = canvas.height/2 + 50 - 100  * PerlinNoise.noise( Math.sin(rotationPerlinInc), Math.cos(rotationPerlinInc), Math.sin(rotationPerlinInc) );
+          // rotation = 0;
+          context.translate( x, y );
+          context.rotate(rotation);
 
-        context.restore();
+          context.beginPath();
+          for( var i=0; i < numCircleSegments; i++ ) {
+            var radius = size * 5 * PerlinNoise.noise( Math.sin((frameCount+i*5)/160), Math.cos((frameCount+i*1)/120), Math.sin((frameCount+i*3)/90) );
+            var radians = i * segmentRadians;
+            if( i == 0 ) context.moveTo( Math.sin( radians ) * radius, Math.cos( radians ) * radius );
+            context.lineTo( Math.sin( radians ) * radius, Math.cos( radians ) * radius );
+          }
+          
+          context.closePath();
+          context.stroke();
+          // context.fill();
+
+          context.restore();
+        };
+
+        var update = function() {
+          frameCount++;
+          startInc += 1;
+
+          rotationPerlinInc += 0.01;
+          rotation = TWO_PI * PerlinNoise.noise( Math.sin(rotationPerlinInc), Math.cos(rotationPerlinInc), Math.sin(rotationPerlinInc) )
+
+          radiusPerlinInc += 0.0001;
+          radiusBase += 0.025;
+          radius = radiusBase + (20 * PerlinNoise.noise( Math.sin(radiusPerlinInc), Math.cos(radiusPerlinInc), Math.sin(radiusPerlinInc) ) )
+
+          speedYPerlinInc += 0.0001;
+          posY += speedY + 1 - 2 * PerlinNoise.noise( Math.sin(speedYPerlinInc), Math.cos(speedYPerlinInc), Math.sin(speedYPerlinInc) )
+          if(posY < 0) {
+            posY = canvas.height;
+            radiusBase = 1;
+            numCircleSegments = 10 + Math.random() * 80;
+            segmentRadians = TWO_PI / numCircleSegments;
+          }
+
+          speedXPerlinInc += 0.0001;
+          // posX += speedX * 0 - PerlinNoise.noise( Math.sin(speedXPerlinInc), Math.cos(speedXPerlinInc), Math.sin(speedXPerlinInc) )
+          posX = canvas.width/2 + Math.sin( PerlinNoise.noise( Math.sin(speedXPerlinInc), Math.cos(speedXPerlinInc), Math.sin(speedXPerlinInc) ) * 50 * Math.sin(speedXPerlinInc * 2)) * 100
+
+          // context.strokeStyle = 'rgba('+ Math.round(startInc + i * colorInc) % 255 +',0,0,0.5)';
+          context.strokeStyle = 'rgba(0,0,0,0.02)';
+          drawCircle( context, posX, posY, radius, rotation );
+
+        };
+
+        return {
+          drawCircle: drawCircle,
+          update: update
+        }
       };
+
 
       // canvas setup
       var canvas = document.getElementById('canvas');
@@ -47,22 +108,18 @@
       canvas.height = window.innerHeight;
       var context = canvas.getContext('2d');
 
-      // draw props
-      var startInc = 0;
-      var frameCount = 0;
-      var TWO_PI = Math.PI * 2;
-      var numCircleSegments = 60;
-      var segmentRadians = TWO_PI / numCircleSegments;
+      var circle = new PerlinCircle();
 
       // frame loop
       setInterval(function(){
-        frameCount++;
-        startInc += 1;
-        
-        // context.strokeStyle = 'rgba('+ Math.round(startInc + i * colorInc) % 255 +',0,0,0.5)';
-        context.strokeStyle = 'rgba(0,0,0,0.1)';
-        drawCircle( context, canvas.width/2 + Math.sin(frameCount/100)*300, canvas.height/2 + Math.sin(frameCount/120)*300, 50+25*Math.sin(frameCount/280), Math.sin((frameCount)/400) );
+        circle.update();
       }, 16);
+
+      document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+      function onDocumentMouseMove( event ) {
+        mouseX = event.clientX;
+        mouseY = event.clientY;
+      }
 
       // canvas saving
       canvas.addEventListener('click',function(){
