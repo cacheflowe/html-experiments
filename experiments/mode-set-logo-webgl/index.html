@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <title>Three.js -- Template</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+  <style>
+    body 
+    {
+      font-family: Monospace;
+      font-weight: bold;
+      background-color: #666666;
+      margin: 0px;
+      overflow: hidden;
+    }
+  </style>
+</head>
+<body>
+
+<div id="message"></div>
+
+<script src="../../javascripts/three/three.min.js"></script>
+
+<script>
+/*  Three.js  */
+
+// standard global variables
+var container, scene, camera, renderer, modeSetSolid, modeSetWireframe;
+var clock = new THREE.Clock();
+
+init();
+animate();
+
+// FUNCTIONS    
+function init() 
+{
+  // SCENE
+  scene = new THREE.Scene();
+
+  // CAMERA
+  var SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;
+  var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
+  camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR);
+  scene.add(camera);
+  camera.position.set(0,0,400);
+  camera.lookAt(scene.position);  
+
+  // renderer
+  // renderer = new THREE.CanvasRenderer( {antialias:true} );
+  renderer = new THREE.WebGLRenderer( {antialias:true} );
+  renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+  container = document.createElement( 'div' );
+  document.body.appendChild( container );
+  container.appendChild( renderer.domElement );
+  // LIGHT
+  var light = new THREE.PointLight(0xffffff);
+  light.position.set(0,250,0);
+  scene.add(light);
+  
+  ////////////
+  // CUSTOM //
+  ////////////
+  
+  var modeSetPoints = [];
+  
+  modeSetPoints.push( new THREE.Vector2 ( 250- 74,  250- 173 ) );
+  modeSetPoints.push( new THREE.Vector2 ( 250- 74,  250- 331 ) );
+  modeSetPoints.push( new THREE.Vector2 ( 250- 118, 250- 395 ) );
+  modeSetPoints.push( new THREE.Vector2 ( 250- 118, 250- 322 ) );
+  modeSetPoints.push( new THREE.Vector2 ( 250- 218, 250- 466 ) );
+  modeSetPoints.push( new THREE.Vector2 ( 250- 218, 250- 363 ) );
+  modeSetPoints.push( new THREE.Vector2 ( 250- 246, 250- 329 ) );
+  modeSetPoints.push( new THREE.Vector2 ( 250- 246, 250- 487 ) );
+  modeSetPoints.push( new THREE.Vector2 ( 250- 347, 250- 391 ) );
+  modeSetPoints.push( new THREE.Vector2 ( 250- 347, 250- 311 ) );
+  modeSetPoints.push( new THREE.Vector2 ( 250- 369, 250- 291 ) );
+  modeSetPoints.push( new THREE.Vector2 ( 250- 369, 250- 334 ) );
+  modeSetPoints.push( new THREE.Vector2 ( 250- 424, 250- 284 ) );
+  modeSetPoints.push( new THREE.Vector2 ( 250- 424, 250- 11  ) );
+  modeSetPoints.push( new THREE.Vector2 ( 250- 369, 250- 64  ) );
+  modeSetPoints.push( new THREE.Vector2 ( 250- 369, 250- 142 ) );
+  modeSetPoints.push( new THREE.Vector2 ( 250- 347, 250- 163 ) );
+  modeSetPoints.push( new THREE.Vector2 ( 250- 347, 250- 119 ) );
+  modeSetPoints.push( new THREE.Vector2 ( 250- 295, 250- 168 ) );
+  modeSetPoints.push( new THREE.Vector2 ( 250- 201, 250- 32  ) );
+  modeSetPoints.push( new THREE.Vector2 ( 250- 201, 250- 168 ) );
+  modeSetPoints.push( new THREE.Vector2 ( 250- 103, 250- 26  ) );
+  modeSetPoints.push( new THREE.Vector2 ( 250- 103, 250- 141 ) );
+
+  
+  var modeSetShape = new THREE.Shape( modeSetPoints );
+
+  var extrusionSettings = {
+    size: 10, height: 1, curveSegments: 3,
+    bevelThickness: 10, bevelSize: 10, bevelEnabled: true,
+    material: 0, extrudeMaterial: 1
+  };
+  
+  var modeSetLogoGeometry = new THREE.ExtrudeGeometry( modeSetShape, extrusionSettings );
+  
+  var materialFront = new THREE.MeshBasicMaterial( { color: 0x00bce4 } );
+  var materialSide = new THREE.MeshBasicMaterial( { color: 0x222222 } );
+  var materialArray = [ materialFront, materialSide ];
+  
+  modeSetSolid = new THREE.Mesh( modeSetLogoGeometry, new THREE.MeshFaceMaterial(materialArray) );
+  modeSetSolid.position.set(0,0,-1000);
+  modeSetSolid.rotation.y = Math.PI;
+  scene.add(modeSetSolid);
+  
+  // add a wireframe to model
+  var wireframeTexture = new THREE.MeshBasicMaterial( { color: 0x000000, wireframe: true, transparent: true } ); 
+  modeSetWireframe = new THREE.Mesh( modeSetLogoGeometry, wireframeTexture );
+  modeSetWireframe.scale = new THREE.Vector3(2, 2, 2);
+  modeSetWireframe.position.set(0,0,-700);
+  modeSetWireframe.rotation.y = Math.PI;
+  scene.add(modeSetWireframe);
+}
+
+function animate() 
+{
+  requestAnimationFrame( animate );
+  render();   
+  update();
+
+  modeSetSolid.rotation.y = clock.getElapsedTime();
+  modeSetWireframe.rotation.y = clock.getElapsedTime();
+}
+
+function update() {
+}
+
+function render() 
+{
+  renderer.render( scene, camera );
+}
+
+</script>
+
+</body>
+</html>
