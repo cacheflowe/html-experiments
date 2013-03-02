@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<!-- saved from url=(0080)http://localhost/html_research/webgl/three.js/examples/webgl_loader_obj_mtl.html -->
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Audio vertex displacement</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <style>
+      body {
+        font-family: Monospace;
+        background-color: #cccccc;
+        color: #fff;
+        margin: 0px;
+        overflow: hidden;
+      }
+    </style>
+  </head>
+  <body>
+
+    <script src="../../javascripts/three/three.min.js"></script>
+    <script src="../../javascripts/modeset/elastic-point-3.js"></script>
+    <script>
+      var SpringyStar = function( baseRadius, maxRadius, numVertices, color ) {
+        var _canvas;
+        var _context;
+        var _elasticPoints;
+        var _color = color;
+        var _segmentLength = ( Math.PI * 2 ) / numVertices;
+
+        var init = function() {
+          createCanvas();
+          buildPoints();
+        };
+
+        var createCanvas = function() {
+          _canvas = document.createElement('canvas');
+          _canvas.width = maxRadius * 3;
+          _canvas.height = maxRadius * 3;
+          _context = _canvas.getContext('2d');
+          // document.body.appendChild( _canvas );
+        };
+
+        var buildPoints = function() {
+          _elasticPoints = [];
+          for( var i=0; i < numVertices; i++ ) {
+            var circleInc = i * _segmentLength;
+            var fric = Math.random() * 10 + 80;
+            var accel = Math.random() * 10 + 10;
+            _elasticPoints.push( new ElasticPoint( Math.sin(circleInc) * baseRadius, Math.cos(circleInc) * baseRadius, 0, fric * 0.01, accel * 0.01 ) );
+          }
+        };
+
+        var update = function() {
+          _context.clearRect(0,0,_canvas.width,_canvas.height);
+          // _context.strokeStyle = _color;
+          drawShape( _canvas.width * 0.5 + 5, _canvas.height * 0.5 + 5, 'rgba(0,0,0,0.3)' );
+          drawShape( _canvas.width * 0.5, _canvas.height * 0.5, _color );
+        };
+
+        var drawShape = function( x, y, fillColor ) {
+          _context.fillStyle = fillColor;
+
+          _context.save();
+          _context.translate( x, y );
+          _context.rotate(0);
+          _context.beginPath();
+          _context.moveTo( _elasticPoints[0].x(), _elasticPoints[0].y() );
+
+          for(var i=0; i < numVertices; i++) {
+            _elasticPoints[i].update();
+            _context.lineTo( _elasticPoints[i].x(), _elasticPoints[i].y() );
+          }
+
+          _context.closePath();
+          _context.fill();  // _context.stroke();
+          _context.restore();
+        };
+
+        var setColor = function( newColor ) {
+          _color = newColor;
+        };
+
+        var getCanvas = function() {
+          return _canvas;
+        };
+
+        var spike = function() {
+          for(var i=0; i < numVertices; i++) {
+            var circleInc = i * _segmentLength;
+            if( i % 2 == 0 ) {
+              var randRadius = baseRadius + Math.random() * 10;
+              _elasticPoints[i].setTarget( Math.sin(circleInc) * randRadius, Math.cos(circleInc) * randRadius, 0 );
+            } else {
+              var radiusDiff = (maxRadius - baseRadius);
+              var randRadius = baseRadius + radiusDiff/2 + (radiusDiff/2) * Math.random();
+              _elasticPoints[i].setTarget( Math.sin(circleInc) * randRadius, Math.cos(circleInc) * randRadius, 0 );
+            }
+          }
+        };
+
+        var collapse = function() {
+          for(var i=0; i < numVertices; i++) {
+            _elasticPoints[i].setTarget( 0, 0, 0 );
+          }
+        };
+
+        init();
+
+        return {
+          update: update,
+          setColor: setColor,
+          collapse: collapse,
+          spike: spike,
+          getCanvas: getCanvas
+        };
+      }
+
+      var container, stats;
+      var camera, scene, renderer, frameCount;
+      var _star = new SpringyStar(60,200,30,'#ff00ff');
+      var mouseX = 0, mouseY = 0;
+      var windowHalfX = window.innerWidth / 2;
+      var windowHalfY = window.innerHeight / 2;
+
+      initTHREE();
+      build3dStar();
+      animate();
+
+
+      function initTHREE() {
+        // 
+        container = document.createElement( 'div' );
+        document.body.appendChild( container );
+
+        // init THREE renderer
+        renderer = new THREE.WebGLRenderer();
+        renderer.setSize( window.innerWidth, window.innerHeight );
+        container.appendChild( renderer.domElement );
+
+        camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 2000 );
+        camera.position.z = 100;
+        scene = new THREE.Scene();
+
+        var directionalLight = new THREE.DirectionalLight( 0xffffff );
+        directionalLight.position.set( 0, 0, 100 );
+        scene.add( directionalLight );
+
+        frameCount = 0;
+        window.addEventListener( 'resize', onWindowResize, false );
+      }
+
+      function build3dStar() {
+        // create texture
+        _texture = new THREE.Texture(_star.getCanvas());
+        _texture.needsUpdate = true;
+          
+        _material = new THREE.MeshBasicMaterial({
+          map: _texture,
+          transparent: true,
+          side: THREE.DoubleSide
+        });
+
+        // springy position
+        _starPos = new ElasticPoint( 0, 0, 0, 0.7, 0.3 );
+        _starRot = new ElasticPoint( 0, 0, 0, 0.8, 0.1 );
+
+        // create mesh
+        _mesh = new THREE.Mesh(
+          new THREE.PlaneGeometry(_star.getCanvas().width, _star.getCanvas().height),
+          _material
+        );
+        _mesh.position.set(0,0,-100);
+        scale = 0.25;
+        _mesh.scale = new THREE.Vector3(scale, scale, scale);
+
+        scene.add( _mesh );
+      }
+
+      function onWindowResize() {
+        windowHalfX = window.innerWidth / 2;
+        windowHalfY = window.innerHeight / 2;
+
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+
+        renderer.setSize( window.innerWidth, window.innerHeight );
+      }
+
+      function animate() {
+        _star.update();
+        _starPos.update();
+        _starRot.update();
+        _texture.needsUpdate = true;
+        // _mesh.rotation.y = Date.now() / 2000;
+        _mesh.position.set( _starPos.x(), _starPos.y(), _starPos.z() );
+        _mesh.rotation.set( _starRot.x(), _starRot.y(), _starRot.z() );
+        requestAnimationFrame( animate );
+        render();
+      }
+
+      function render() {
+        renderer.render( scene, camera );
+      }
+
+      var collapse = false;
+      setInterval(function(){
+        collapse = !collapse;
+        if(collapse) {
+          _star.collapse();
+          _starPos.setTarget(-25,25,-125);
+          _starRot.setTarget(-0.5,-0.5,-0.5);
+        } else {
+          _star.setColor('#'+Math.floor(Math.random()*16777215).toString(16));
+          _star.spike();
+          setTimeout(function(){
+            _starPos.setTarget(0,0,-100);  
+          _starRot.setTarget(0,0,0);
+          },10);
+          _starPos.setCurrent(25,-25,-125);
+          _starPos.setTarget(25,-25,-125);
+          _starRot.setCurrent(0.5,0.5,0.5);
+          _starRot.setTarget(0.5,0.5,0.5);
+        }
+      },2000);
+
+    </script>
+</body>
+</html>

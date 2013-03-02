@@ -41,6 +41,7 @@
             mesh,
             meshDefault,
             ballMaterial,
+            materials,
             soundPlayer;
 
         var vertex, vertexOrig, numVertices, vertexNoise;
@@ -49,7 +50,7 @@
         var ballSize = 20;
 
         // mesh material
-        ballMaterial = new THREE.MeshPhongMaterial({
+        materials = [new THREE.MeshLambertMaterial({
           color: color,
           shininess: 100,
           specular: 0xcccccc,
@@ -57,16 +58,30 @@
           shading: THREE.SmoothShading,
           blending: THREE.NormalBlending,
           wireframe: false,
-          wireframeLinewidth: 1
-        });
+          wireframeLinewidth: 1,
+          vertexColors: THREE.FaceColors
+        }),new THREE.MeshLambertMaterial({
+          color: color,
+          shininess: 100,
+          specular: 0xcccccc,
+          opacity: 1,
+          shading: THREE.SmoothShading,
+          blending: THREE.NormalBlending,
+          wireframe: true,
+          wireframeLinewidth: 1,
+          vertexColors: THREE.FaceColors
+        })];
 
         // build geometry
         geometry = new THREE.SphereGeometry(ballSize, ballDivisor, ballDivisor);
         geometryDefault = new THREE.SphereGeometry(ballSize, ballDivisor, ballDivisor);
+        for( var i = 0; i < geometry.faces.length; i++ ) {
+          geometry.faces[ i ].materialIndex = ( Math.random() < 0.5 ) ? 0: 1;
+        }
 
         // build mesh and mesh origin
-        mesh = new THREE.Mesh( geometry, ballMaterial, 1);
-        meshDefault = new THREE.Mesh( geometryDefault, ballMaterial, 1);
+        mesh = new THREE.Mesh( geometry, new THREE.MeshFaceMaterial(materials) );
+        meshDefault = new THREE.Mesh( geometryDefault, new THREE.MeshFaceMaterial(materials) );
         mesh.castShadow = mesh.receiveShadow = true;
         mesh.position = positionVec3;
         scene.add( mesh );
@@ -102,7 +117,7 @@
             );
           }
           mesh.geometry.verticesNeedUpdate = true;
-        }
+        };
 
         var deform = function() {
           for(var i=0; i < mesh.geometry.vertices.length; i++) {
@@ -115,7 +130,14 @@
             );
           }
           mesh.geometry.verticesNeedUpdate = true;
-        }
+
+          // for( var i = 0; i < mesh.geometry.faces.length; i++ ) {
+          //   mesh.geometry.faces[ i ].materialIndex = ( Math.random() < 0.5 ) ? 0: 1;
+          //   // if(i == 2) console.log(i,mesh.geometry.faces[ i ].materialIndex);
+          // }
+          // mesh.geometry.colorsNeedUpdate = true;
+          // // mesh.geometry.verticesNeedUpdate = true;
+        };
 
         var updateElastic = function() {
           for(var i=0; i < mesh.geometry.vertices.length; i++) {
@@ -129,7 +151,7 @@
             );
           }
           mesh.geometry.verticesNeedUpdate = true;
-        }
+        };
 
         var bumpElastic = function() {
           var vertexNoiseMult = 0.04;
@@ -147,7 +169,7 @@
               vertexOrig.y - vertexOrig.y * vertexNoise,
               vertexOrig.z - vertexOrig.z * vertexNoise
             );
-          }
+          };
 
           setTimeout(function() {
             // reset elastic vertices
@@ -162,11 +184,25 @@
           }, 50);
         };
 
+        var updateVertexColors = function() {
+          numFaces = mesh.geometry.faces.length;
+          for(var i=0; i < numFaces; i++) {
+            faceOrig = meshDefault.geometry.faces[i];
+            // vertexNoise = 0.5 * PerlinNoise.noise( indexOffsetVertex.x * vertexNoiseMult, indexOffsetVertex.y * vertexNoiseMult, indexOffsetVertex.z * vertexNoiseMult );
+            // elasticPoints[i].setTarget( 
+            //   vertexOrig.x - vertexOrig.x * vertexNoise,
+            //   vertexOrig.y - vertexOrig.y * vertexNoise,
+            //   vertexOrig.z - vertexOrig.z * vertexNoise
+            // );
+          };
+        };
+
         return {
           update: update,
           deform: deform,
           updateElastic: updateElastic,
-          bumpElastic: bumpElastic
+          bumpElastic: bumpElastic,
+          updateVertexColors: updateVertexColors
         };
       }
 
@@ -209,6 +245,7 @@
         frameCount = 0;
  
         ball1 = new AudioBall( 0xff00ff, '../../media/audio/porta-note.mp3', new THREE.Vector3( -60, 0, 0 ) );
+        // ball1 = new AudioBall( 0xff00ff, null, new THREE.Vector3( -60, 0, 0 ) );
         ball2 = new AudioBall( 0x00ffff, null, new THREE.Vector3( 60, 0, 0 ) );
         ball3 = new AudioBall( 0xffff00, null, new THREE.Vector3( 0, 0, 0 ) );
 
@@ -233,6 +270,7 @@
         controls.update();
 
         ball1.update();
+        // ball1.deform();
         ball2.deform();
         ball3.updateElastic();
 
