@@ -24,6 +24,9 @@
       var mouseX = window.innerWidth / 2;
       var mouseY = window.innerHeight / 2;
 
+      var attractorX = window.innerWidth / 2;
+      var attractorY = window.innerHeight + 40;
+
       var PerlinCircle = function() {
         // draw props
         var startInc = 0;
@@ -42,6 +45,13 @@
         var speedXPerlinInc = 0;
 
         var elasticLoc = new ElasticPoint( canvas.width/2, canvas.height, 0, 0.4, 0.1 );
+
+        var xPerlinDiv1 = 100 + Math.random() * 100;
+        var xPerlinDiv2 = 100 + Math.random() * 100;
+        var xPerlinDiv3 = 100 + Math.random() * 100;
+        var yPerlinDiv1 = 100 + Math.random() * 100;
+        var yPerlinDiv2 = 100 + Math.random() * 100;
+        var yPerlinDiv3 = 100 + Math.random() * 100;
         
         // circle drawing
         var drawCircle = function( context, x, y, size, rotation ) {
@@ -55,7 +65,8 @@
 
           context.beginPath();
           for( var i=0; i < numCircleSegments; i++ ) {
-            var radius = size * 5 * PerlinNoise.noise( Math.sin((frameCount+i*5)/160), Math.cos((frameCount+i*1)/120), Math.sin((frameCount+i*3)/90) );
+            var radius = size * 5 * PerlinNoise.noise( Math.sin((frameCount/2+i*4)/140), Math.cos((frameCount/2+i*4)/120), Math.sin((frameCount+i*4)/90) );
+            // var radius = size * 5 * PerlinNoise.noise( Math.sin((frameCount)/10000*i*2), Math.cos((frameCount)/24000*i), Math.sin((frameCount)/60000*i) );
             var radians = i * segmentRadians;
             if( i == 0 ) context.moveTo( Math.sin( radians ) * radius, Math.cos( radians ) * radius );
             context.lineTo( Math.sin( radians ) * radius, Math.cos( radians ) * radius );
@@ -69,13 +80,16 @@
         };
 
         var update = function() {
-          elasticLoc.setTarget( mouseX, mouseY );
+          attractorX += 5 * (-0.5 + PerlinNoise.noise( Math.sin(frameCount/xPerlinDiv1), Math.cos(frameCount/xPerlinDiv2), Math.sin(frameCount/xPerlinDiv3) ));
+          attractorY -= 1 * PerlinNoise.noise( Math.sin(frameCount/yPerlinDiv1), Math.cos(frameCount/yPerlinDiv2), Math.sin(frameCount/yPerlinDiv3) );// + Math.sin(frameCount/60) * 1;
+
+          elasticLoc.setTarget( attractorX, attractorY );
           elasticLoc.update();
 
           frameCount++;
           startInc += 1;
 
-          rotationPerlinInc += 0.001;
+          rotationPerlinInc += 0.0001;
           rotation = TWO_PI * PerlinNoise.noise( Math.sin(rotationPerlinInc), Math.cos(rotationPerlinInc), Math.sin(rotationPerlinInc) )
 
           radiusPerlinInc += 0.0001;
@@ -98,7 +112,7 @@
           posX = elasticLoc.x();
 
           // context.strokeStyle = 'rgba('+ Math.round(startInc + i * colorInc) % 255 +',0,0,0.5)';
-          context.strokeStyle = 'rgba(0,0,0,0.04)';
+          context.strokeStyle = 'rgba(0,0,0,0.02)';
           drawCircle( context, posX, posY, radius, rotation );
 
         };
@@ -117,6 +131,9 @@
       var context = canvas.getContext('2d');
 
       var circles = [
+        new PerlinCircle(),
+        new PerlinCircle(),
+        new PerlinCircle(),
         new PerlinCircle(),
         new PerlinCircle()
       ];
