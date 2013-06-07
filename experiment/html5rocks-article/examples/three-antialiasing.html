@@ -1,0 +1,234 @@
+<html>
+  <head>
+    <meta charset='utf-8'/>
+    <title>Roll It Demos</title>
+    <meta content='width=device-width, initial-scale=1, maximum-scale=2, user-scalable=1' name='viewport'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,300,700' rel='stylesheet' type='text/css'>
+    <style type="text/css">
+
+      body {
+        background-color: #ffffff;
+        color: #222222;
+        text-align: center;
+        font-size: 20px;
+        font-family: 'Open Sans',sans-serif;
+        font-weight: 300;
+        margin: 0;
+        padding: 0;
+
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+      }
+      h1 {
+        font-weight: 700;
+        margin-bottom: 10px;
+      }
+      a {
+        color: #000;
+      }
+      nav ul {
+        width: 281px;
+        margin: 0 auto;
+        text-align: left;
+        margin-bottom: 40px;
+      }
+      #container {
+        height: 600px;
+        background-color: #eee;
+        position: relative;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Roll It Demo</h1>
+    <nav id="header">
+      <ul>
+        <li><a href="ball-rotation.html">Ball Rotation</a></li>
+        <li>THREE Antialiasing</li>
+        <li><a href="accelerometer-roll-gesture.html">Accelerometer Roll Gesture</a></li>
+        <li><a href="ball-cup-physics.html">Ball &amp; Cup Physics</a></li>
+      </ul>
+    </nav>
+
+    <article id="container"></article>
+    <p id="anti-native">Antialiasing is working natively.</p>
+    <p id="anti-post">Antialiasing is <span id="en">en</span><span id="dis">dis</span>abled via the FXAA post-processing shader. <input id="post-check" type="checkbox" checked="checked" autocomplete="off"></input></p>
+    
+    <!-- add THREE and extra classes used for post-processing if needed -->
+    <script type="text/javascript" src="./js/three.min.js"></script>
+    <script type="text/javascript" src="./js/three-post/CopyShader.js"></script>
+    <script type="text/javascript" src="./js/three-post/EffectComposer.js"></script>
+    <script type="text/javascript" src="./js/three-post/FXAAShader.js"></script>
+    <script type="text/javascript" src="./js/three-post/RenderPass.js"></script>
+    <script type="text/javascript" src="./js/three-post/ShaderPass.js"></script>
+
+    <script>
+      // scene container element ------------------------------------------------------------------------
+      var container = document.getElementById('container');
+
+      // THREE objects for a basic scene ----------------------------------------------------------------
+      var camera, scene, renderer;
+      var geometry, material, boxSmall, boxLarge, plane;
+      var sceneW, sceneH;
+
+      // antialiasing support
+      var renderScene, effectFXAA, composer, dpr;
+      var nativeAntialiasSupport = false;
+      var isNativeAntialiasing = false;
+      var isPostProcessing = true;
+
+      // build and animate the THREE scene --------------------------------------------------------------
+      function init() {
+        // store scene dimensions
+        sceneW = container.offsetWidth;
+        sceneH = container.offsetHeight;
+
+        // build camera & scene
+        camera = new THREE.PerspectiveCamera( 50, sceneW / sceneH, 1, 10000 );
+        camera.position.z = 2000;
+        scene = new THREE.Scene();
+
+        // add a cube
+        geometry = new THREE.CubeGeometry( 400, 400, 400 );
+        material = new THREE.MeshBasicMaterial( { color: 0xff0000, wireframe: true, wireframeLinewidth: 2 } );
+        boxSmall = new THREE.Mesh( geometry, material );
+        scene.add( boxSmall );
+
+        // add a cube
+        geometry = new THREE.CubeGeometry( 800, 800, 800 );
+        material = new THREE.MeshBasicMaterial( { color: 0x0000ff, wireframe: true, wireframeLinewidth: 2 } );
+        boxLarge = new THREE.Mesh( geometry, material );
+        scene.add( boxLarge );
+
+        // add a plane to help with perspective
+        geometry = new THREE.PlaneGeometry( 1600, 300 );
+        material = new THREE.MeshBasicMaterial( { color: 0x000000, transparent: true, opacity: 0.75 } );
+        plane = new THREE.Mesh( geometry, material );
+        scene.add( plane );
+
+        // build the WebGL renderer
+        renderer = new THREE.WebGLRenderer( { antialias: true } );
+        renderer.setSize( sceneW, sceneH );
+        renderer.setClearColorHex(0xffffff)
+        container.appendChild( renderer.domElement );
+      }
+
+      // check for native platform antialias support and add the FXAA post-processing shader if needed --
+      function addAntiAliasing() {
+        // check for native platform antialias support
+        // http://codeflow.org/entries/2013/feb/22/how-to-write-portable-webgl/#antialiasing
+        isNativeAntialiasing = renderer.context.getContextAttributes().antialias;
+        nativeAntialiasSupport = (renderer.context.getParameter(renderer.context.SAMPLES) == 0) ? false : true;
+
+        if( !nativeAntialiasSupport ) {
+          // tell the user that they're using post-processing antialiasing
+          var nativeMessage = document.getElementById('anti-native');
+          nativeMessage.parentNode.removeChild( nativeMessage );
+
+          // handle retina screens properly
+          dpr = 1;
+          if (window.devicePixelRatio !== undefined) dpr = window.devicePixelRatio;
+
+          // set up post-processing chain
+          renderScene = new THREE.RenderPass( scene, camera );
+
+          effectFXAA = new THREE.ShaderPass( THREE.FXAAShader );
+          effectFXAA.uniforms[ 'resolution' ].value.set( 1 / (sceneW * dpr), 1 / (sceneH * dpr) );
+          effectFXAA.renderToScreen = true;
+
+          composer = new THREE.EffectComposer( renderer );
+          composer.setSize( window.innerWidth * dpr, window.innerHeight * dpr );
+          composer.addPass( renderScene );
+          composer.addPass( effectFXAA );
+        } else {
+          // tell the user that they're using native antialiasing
+          var postMessage = document.getElementById('anti-post');
+          postMessage.parentNode.removeChild( postMessage );
+        }
+      }
+
+      // set up checkbox to toggle post-processing (and the related message) if needed ------------------
+      var buildCheckbox = function() {
+        if( !nativeAntialiasSupport ) {
+          document.getElementById('dis').style.display = "none";
+          var checkbox = document.getElementById('post-check');
+          checkbox.addEventListener('click', function(){
+            isPostProcessing = !isPostProcessing;
+            if( isPostProcessing ) {
+              document.getElementById('en').style.display = "";
+              document.getElementById('dis').style.display = "none";
+            } else {
+              document.getElementById('en').style.display = "none";
+              document.getElementById('dis').style.display = "";
+            }
+          }, false);
+        }
+      };
+
+      // animate boxes and render the THREE scene, with post-processing if needed -----------------------
+      var animate = function() {
+        // rotate shapes
+        boxSmall.rotation.y += 0.002;
+
+        boxLarge.rotation.x = Math.sin(Date.now()/1000) / 20;
+        boxLarge.rotation.y += 0.001;
+
+        plane.rotation.z = Math.sin(Date.now()/1000) / 20;
+
+        // render the antialias post-processing of the plain old THREE scene
+        if( !nativeAntialiasSupport && isPostProcessing == true ) {
+          composer.render();
+        } else {
+          renderer.render( scene, camera );
+        }
+
+        // continue animating
+        requestAnimationFrame( animate );
+      }
+
+      // update THREE objects when window resizes -------------------------------------------------------
+      var onWindowResize = function() {
+        // store scene dimensions
+        sceneW = container.offsetWidth;
+        sceneH = container.offsetHeight;
+        // update camera
+        camera.aspect = sceneW / sceneH;
+        camera.updateProjectionMatrix();
+
+        // update post-processing/shader size
+        if( !nativeAntialiasSupport ) {
+          effectFXAA.uniforms[ 'resolution' ].value.set( 1 / (sceneW * dpr), 1 / (sceneH * dpr) );
+          composer.setSize( sceneW * dpr, sceneH * dpr );
+        }
+
+        // set renderer size
+        renderer.setSize( sceneW, sceneH );
+      }
+      window.addEventListener( 'resize', onWindowResize, false );
+
+      // kick it off ------------------------------------------------------------------------------------
+      var hasWebGL = (function () { 
+        // from Detector.js
+        try { 
+          return !! window.WebGLRenderingContext && !! document.createElement( 'canvas' ).getContext( 'experimental-webgl' ); 
+        } catch( e ) { 
+          return false; 
+        } 
+      })();
+
+      if( hasWebGL ) {
+        init();
+        addAntiAliasing();
+        buildCheckbox();
+        animate();
+      } else {
+        alert('You don\'t seem to have WebGL, which is required for this demo.');
+      }
+
+    </script>
+  </body>
+</html>

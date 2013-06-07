@@ -1,0 +1,322 @@
+<html>
+  <head>
+    <meta charset='utf-8'/>
+    <title>Roll It Demos</title>
+    <meta content='width=device-width, initial-scale=1, maximum-scale=2, user-scalable=1' name='viewport'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,300,700' rel='stylesheet' type='text/css'>
+    <style type="text/css">
+
+      body {
+        background-color: #ffffff;
+        color: #222222;
+        text-align: center;
+        font-size: 20px;
+        font-family: 'Open Sans',sans-serif;
+        font-weight: 300;
+        margin: 0;
+        padding: 0;
+
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+      }
+      h1 {
+        font-weight: 700;
+        margin-bottom: 10px;
+      }
+      a {
+        color: #000;
+      }
+      nav ul {
+        width: 281px;
+        margin: 0 auto;
+        text-align: left;
+        margin-bottom: 40px;
+      }
+      #container {
+        height: 600px;
+        background-color: #eee;
+        position: relative;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Roll It Demo</h1>
+    <nav id="header">
+      <ul>
+        <li><a href="ball-rotation.html">Ball Rotation</a></li>
+        <li><a href="three-antialiasing.html">THREE Antialiasing</a></li>
+        <li><a href="accelerometer-roll-gesture.html">Accelerometer Roll Gesture</a></li>
+        <li>Ball &amp; Cup Physics</li>
+      </ul>
+    </nav>
+
+    <article id="container"></article>
+    
+    <script type="text/javascript" src="./js/three.min.js"></script>
+    <script type="text/javascript" src="./js/physijs/physi.js"></script>
+
+    <script>
+      // scene container element ------------------------------------------------------------------------
+      var container = document.getElementById('container');
+
+      // THREE objects  ---------------------------------------------------------------------------------
+      var camera, scene, renderer;
+      var sceneW, sceneH;
+      var physicsMaterial;
+
+      // initialize the physics demo --------------------------------------------------------------------
+      function init() {
+        // store scene dimensions
+        sceneW = container.offsetWidth;
+        sceneH = container.offsetHeight;
+
+        // build the 3d world
+        buildPhysicsScene();
+        buildRenderer();
+        buildCamera();
+        buildGround();
+        buildPhysicsMaterial();
+        buildCircles();
+        buildBall();
+        buildLights();
+      }
+
+      // build the WebGL renderer -----------------------------------------------------------------------
+      var buildRenderer = function() {
+        renderer = new THREE.WebGLRenderer( { antialias: true } );
+        renderer.setSize( sceneW, sceneH );
+        renderer.setClearColorHex(0xeeeeee);
+        renderer.shadowMapEnabled = true;
+        renderer.shadowMapSoft = true;
+        renderer.shadowMapType = THREE.PCFShadowMap;
+        renderer.shadowMapAutoUpdate = true;
+
+        container.appendChild( renderer.domElement );
+      };
+
+      // add an ambient light and a spot light for shadowing --------------------------------------------
+      var buildLights = function() {
+        scene.add( new THREE.AmbientLight( 0x666666) );
+
+        var light = new THREE.SpotLight(0xcccccc);
+        light.position.set(0, 1000, 0);
+        light.target.position.copy(scene.position);
+        light.shadowCameraTop = -700;
+        light.shadowCameraLeft = -700;
+        light.shadowCameraRight = 700;
+        light.shadowCameraBottom = 700;
+        light.shadowCameraNear = 20;
+        light.shadowCameraFar = 1400;
+        light.shadowBias = -.0001;
+        light.shadowMapWidth = light.shadowMapHeight = 1024;
+        light.shadowDarkness = .25;
+        light.castShadow = true;
+        light.shadowCameraVisible = false;
+        scene.add(light);
+      };
+
+      // build the THREE camera -------------------------------------------------------------------------
+      var buildCamera = function() {
+        camera = new THREE.PerspectiveCamera( 50, sceneW / sceneH, 1, 10000 );
+        // move camera up and back, and point it down at the center of the 3d scene
+        camera.position.z = 600;
+        camera.position.y = 200;
+        camera.lookAt(new THREE.Vector3(0,0,0));
+      };
+
+      // build the Physijs scene, which takes the place of a THREE scene --------------------------------
+      var buildPhysicsScene = function() {
+        // lean about Physi.js basic setup here: https://github.com/chandlerprall/Physijs/wiki/Basic-Setup
+        // set the path of the web worker javascripts
+        Physijs.scripts.worker = './js/physijs/physijs_worker.js';
+        Physijs.scripts.ammo = 'ammo.js'; // must be relative to physijs_worker.js
+
+        // init the scene
+        scene = new Physijs.Scene({reportsize: 50, fixedTimeStep: 1 / 60});
+        scene.setGravity(new THREE.Vector3( 0, -800, 0 ));
+      };
+
+      // build the ground plane and rotate it to be flat ------------------------------------------------
+      var buildGround = function() {
+        var groundGeometry = new THREE.PlaneGeometry(1000, 1000, 10, 10);
+        groundGeometry.computeFaceNormals();
+        groundGeometry.computeVertexNormals();
+
+        var groundMaterial = Physijs.createMaterial( 
+          new THREE.MeshPhongMaterial({ 
+            color: 0x999999, 
+            wireframe: false,
+            shininess: 10,
+            color: 0xdddddd,
+            emissive: 0x111111
+          }),
+          .8, // high friction
+          .8 // high restitution
+        );
+
+        var ground = new Physijs.HeightfieldMesh(groundGeometry, groundMaterial, 0);
+        ground.rotation.x = -Math.PI / 2;
+        ground.receiveShadow = true;
+        ground.castShadow = true;
+
+        scene.add( ground );
+      };
+
+      // create a material to share between segments of the physics walls -------------------------------
+      var buildPhysicsMaterial = function() {
+        physicsMaterial = Physijs.createMaterial(
+          new THREE.MeshLambertMaterial({
+            color: 0xdddddd,
+            emissive: 0x007844,
+            ambient: 0x000000,
+            shininess: 100,
+            specular: 0xcccccc,
+            shading: THREE.SmoothShading
+          }), 
+          .8, // high friction
+          .8 // high restitution
+        );
+      };
+
+      // create a physics wall of a certain size, at a certain location ---------------------------------
+      var buildPhysicsWall = function(width, height, depth, x, y, z) {
+        var physicsMesh, wallGeometry;
+        wallGeometry = new THREE.CubeGeometry(width, height, depth);
+        wallGeometry.computeFaceNormals();
+        wallGeometry.computeVertexNormals();
+        physicsMesh = new Physijs.BoxMesh(wallGeometry, physicsMaterial, 0);
+        physicsMesh.castShadow = true;
+        physicsMesh.receiveShadow = true;
+        physicsMesh.position.set(x, y, z);
+        return physicsMesh;
+      };
+
+      // build a cup at a specific radius, location and height ------------------------------------------
+      var buildCircleWall = function(radius, arc, circleSegments, x, z, wallH) {
+        var curRadians, i, segmentRadians, startRadians, wall, wallW;
+        // calculate the size and circle position of each wall segment
+        segmentRadians = (arc * (Math.PI * 2)) / circleSegments;
+        startRadians = -Math.PI / 2;
+        wallW = radius * segmentRadians;
+        i = 0;
+        // build the circle of walls by looping around the circle path
+        while (i < circleSegments) {
+          wall = buildPhysicsWall(wallW, wallH, 0.3, 0, wallH/2, 0);
+          curRadians = startRadians + i * segmentRadians;
+          wall.position.x = x + radius * Math.sin(curRadians);
+          wall.position.z = z + radius * Math.cos(curRadians);
+          wall.rotation.y = curRadians;
+          scene.add(wall);
+          i++;
+        }
+      };
+
+      // build the circles in the 3d scene. smiley face has a partial circle ----------------------------
+      var buildCircles = function() {
+        buildCircleWall(60, 1, 30, -88, -20, 20);
+        buildCircleWall(60, 1, 30, 88, -20, 20);
+        buildCircleWall(200, 0.5, 40, 0, 80, 20);
+        buildCircleWall(400, 1, 40, 0, 0, 70);
+      };
+
+      // build the ball and draw its texture with a 2d canvas -------------------------------------------
+      var buildBall = function() {
+        // create a canvas to draw the ball's texture
+        var ballCanvas = document.createElement('canvas');
+        ballCanvas.width = 64;
+        ballCanvas.height = 64;
+        var ballContext = ballCanvas.getContext('2d');
+
+        // draw 2 colored halves of the 2d canvas 
+        ballContext.fillStyle = "#f8ae44";
+        ballContext.fillRect(0, 0, ballCanvas.width, ballCanvas.height/2);
+        ballContext.fillStyle = "#ffda4e";
+        ballContext.fillRect(0, ballCanvas.height/2, ballCanvas.width, ballCanvas.height/2);
+
+        // create the THREE texture object with our canvas
+        var ballTexture = new THREE.Texture( ballCanvas );
+        ballTexture.needsUpdate = true;
+
+        // create the physijs-enabled material with some decent friction & bounce properties
+        var ballMaterial = Physijs.createMaterial(
+          new THREE.MeshLambertMaterial({
+            map: ballTexture,
+            shininess: 10,
+            color: 0xdddddd,
+            emissive: 0x111111,
+            side: THREE.FrontSide
+          }), 
+          .6, // mid friction
+          .5 // mid restitution
+        );
+        ballMaterial.map.wrapS = ballMaterial.map.wrapT = THREE.RepeatWrapping;
+        ballMaterial.map.repeat.set( 1, 1 );
+
+        // create the physics-enabled sphere mesh, and start it up in the air
+        ball = new Physijs.SphereMesh(
+          new THREE.SphereGeometry( 30, 32, 32 ),
+          ballMaterial, 
+          100
+        );
+        ball.position.y = 500;
+        ball.receiveShadow = true;
+        ball.castShadow = true;
+        scene.add( ball );
+      };
+
+      // update the physics engine and render every frame -----------------------------------------------
+      var animate = function() {
+        scene.simulate(); // run physics
+        renderer.render( scene, camera); // render the scene
+
+        // continue animating
+        requestAnimationFrame( animate );
+      }
+
+      // randomly toss the ball on mouse click ----------------------------------------------------------
+      var tossBall = function() {
+        var xSpeed = Math.random() * 600 - 300;
+        var zSpeed = Math.random() * 600 - 300;
+        ball.setLinearVelocity( new THREE.Vector3(xSpeed,300,zSpeed) );
+      };
+      document.addEventListener('click', tossBall, false);
+
+      // update THREE objects when window resizes -------------------------------------------------------
+      var onWindowResize = function() {
+        // store scene dimensions
+        sceneW = container.offsetWidth;
+        sceneH = container.offsetHeight;
+        // update camera
+        camera.aspect = sceneW / sceneH;
+        camera.updateProjectionMatrix();
+
+        // set renderer size
+        renderer.setSize( sceneW, sceneH );
+      }
+      window.addEventListener( 'resize', onWindowResize, false );
+
+      // kick it off ------------------------------------------------------------------------------------
+      var hasWebGL = (function () { 
+        // from Detector.js
+        try { 
+          return !! window.WebGLRenderingContext && !! document.createElement( 'canvas' ).getContext( 'experimental-webgl' ); 
+        } catch( e ) { 
+          return false; 
+        } 
+      })();
+
+      if( hasWebGL ) {
+        init();
+        animate();
+      } else {
+        alert('You don\'t seem to have WebGL, which is required for this demo.');
+      }
+
+    </script>
+  </body>
+</html>

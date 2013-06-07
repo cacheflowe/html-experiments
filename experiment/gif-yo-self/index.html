@@ -1,0 +1,312 @@
+
+<!DOCTYPE html>
+<html class="no-js">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>gif.js</title>
+  <meta name="viewport" content="width=device-width">
+  <script src="filters.js"></script>
+  <script src="gif.js"></script>
+  <script src="context_blender.js"></script>
+</head>
+<body>
+
+  <video id="webcam" style="display:none"></video>
+  <canvas id="photo" style="display:none"></canvas>
+  <canvas id="lastFrame" style="display:none"></canvas>
+  <canvas id="display"></canvas>
+  <canvas id="filter"></canvas><br/>
+
+  <input type="button" id="captureStream" value="Gif Yo' Self" /> or 
+  <input type="button" id="captureFrame" value="Stop Motion" />
+  with filter: <select id="filterSelect">
+    <option value="grayscale">grayscale</option>
+    <option value="brightness">brightness</option>
+    <option value="threshold">threshold</option>
+    <option value="sharpen">sharpen</option>
+    <option value="blur">blur</option>
+    <option value="sobel">sobel</option>
+    <option value="difference">difference</option>
+    <option value="exclusion">exclusion</option>
+    <option value="burn">burn</option>
+    <option value="dodge">dodge</option>
+    <option value="add">add</option>
+    <option value="multiply">multiply</option>
+    <option value="none">none</option>
+  </select>
+  <br/>
+
+  <script>
+    function utf8_to_b64( str ) {
+      return window.btoa(unescape(encodeURIComponent( str )));
+    }
+
+    function b64_to_utf8( str ) {
+      return decodeURIComponent(escape(window.atob( str )));
+    }
+
+    // set up gif
+    var gif, gifFrames;
+    var GIF_FRAMES = 30;
+    var autoCapture = true;
+
+    // set up filters
+    var pixelsToFilter = null;
+    var filteredPixels = null;
+    var vertical = null;
+    var horizontal = null;
+
+    var filterSelect = document.getElementById('filterSelect');
+
+
+
+    // webcam capture
+    var getVideo = true,
+        getAudio = false,
+
+        video = document.getElementById('webcam'),
+        display = document.getElementById('display'),
+        displayContext = display.getContext('2d');
+        filter = document.getElementById('filter'),
+        filterContext = filter.getContext('2d');
+        lastFrame = document.getElementById('lastFrame'),
+        lastFrameContext = lastFrame.getContext('2d');
+
+    navigator.getUserMedia ||
+        (navigator.getUserMedia = navigator.mozGetUserMedia ||
+        navigator.webkitGetUserMedia || navigator.msGetUserMedia);
+
+    window.audioContext ||
+        (window.audioContext = window.webkitAudioContext);
+
+    window.requestAnimationFrame ||
+        (window.requestAnimationFrame = window.webkitRequestAnimationFrame || 
+            window.mozRequestAnimationFrame || 
+            window.oRequestAnimationFrame || 
+            window.msRequestAnimationFrame || 
+            function( callback ){
+                window.setTimeout(callback, 1000 / 60);
+            });
+
+    function onSuccess(stream) {
+        var videoSource,
+            audioContext,
+            mediaStreamSource;
+
+        if (getVideo) {
+            if (window.webkitURL) {
+                videoSource = window.webkitURL.createObjectURL(stream);
+            } else {
+                videoSource = stream;
+            }
+
+            video.autoplay = true;
+            video.src = videoSource;
+
+            display.width = filter.width = lastFrame.width = 320;
+            display.height = filter.height = lastFrame.height = 240;
+            
+            streamFeed();
+        }
+
+        if (getAudio && window.audioContext) {
+            audioContext = new window.audioContext();
+            mediaStreamSource = audioContext.createMediaStreamSource(stream);
+            mediaStreamSource.connect(audioContext.destination);
+        }
+    }
+
+    function onError() {
+        alert('There has been a problem retreiving the streams - are you running on file:/// or did you disallow access?');
+    }
+
+    function captureStream() {
+      autoCapture = true;
+      if(gif == null) createGif();
+    }
+
+    function captureFrame() {
+      autoCapture = false;
+      if(gif == null) createGif();
+      addGifFrame();
+    }
+
+    function createGif() {
+        // var photo = document.getElementById('photo'),
+        //     context = photo.getContext('2d');
+
+        // photo.width = display.width;
+        // photo.height = display.height;
+
+        // context.drawImage(display, 0, 0, photo.width, photo.height);
+
+
+
+        gif = new GIF({
+          workers: 10,
+          quality: 0.3,
+          width: 320,
+          height: 240
+        });
+        gif.on('finished', function(blob) {
+          // pop image into a new window
+          window.open(URL.createObjectURL(blob));
+
+          // add as an inline base64 img
+          // var reader = new FileReader();
+          // reader.onload = function(event){
+          //   var base64Img = event.target.result; //event.target.results contains the base64 code to create the image.
+          //   var img = document.createElement('img');
+          //   img.src = base64Img;
+          //   document.body.appendChild(img); 
+
+          //   // b64_to_utf8(base64Img);
+          // };
+          // reader.readAsDataURL(blob);
+          
+          // clear it out
+          gif = null
+        });
+
+        gifFrames = 0;
+    }
+
+    function requestStreams() {
+        if (navigator.getUserMedia) {
+            navigator.getUserMedia({
+                video: getVideo,
+                audio: getAudio
+            }, onSuccess, onError);
+        } else {
+            alert('getUserMedia is not supported in this browser.');
+        }
+    }
+
+    function streamFeed() {
+        requestAnimationFrame(streamFeed);
+        // put video frame into canvas
+        displayContext.drawImage(video, 0, 0, display.width, display.height);
+        // copy pixels with filter to filter canvas
+        pixelsToFilter = displayContext.getImageData(0,0,displayContext.canvas.width,displayContext.canvas.height);
+
+        // make filter switch
+        switch(filterSelect.value) {
+          case 'grayscale' :
+            filteredPixels = Filters.grayscale( pixelsToFilter );
+            break;
+          case 'brightness' :
+            filteredPixels = Filters.brightness( pixelsToFilter, 127 );
+            break;
+          case 'threshold' :
+            filteredPixels = Filters.threshold( pixelsToFilter, 128 );
+            break;
+          case 'blur' :
+            filteredPixels = Filters.convolute( pixelsToFilter, 
+              [ 1/9, 1/9, 1/9,
+                1/9, 1/9, 1/9,
+                1/9, 1/9, 1/9 ],
+              false );
+            // do it gaain?
+            filteredPixels = Filters.convolute( filteredPixels, 
+              [ 1/9, 1/9, 1/9,
+                1/9, 1/9, 1/9,
+                1/9, 1/9, 1/9 ],
+              false );
+            // and gaain?
+            filteredPixels = Filters.convolute( filteredPixels, 
+              [ 1/9, 1/9, 1/9,
+                1/9, 1/9, 1/9,
+                1/9, 1/9, 1/9 ],
+              false );
+            break;
+          case 'sharpen' :
+            filteredPixels = Filters.convolute( pixelsToFilter, 
+              [ 0, -1,  0,
+               -1,  5, -1,
+                0, -1,  0],
+              false );
+            break;
+          case 'sobel' :
+            filteredPixels = Filters.grayscale( pixelsToFilter );
+            vertical = Filters.convoluteFloat32( filteredPixels,
+                        [-1,-2,-1,
+                          0, 0, 0,
+                          1, 2, 1]);
+            horizontal = Filters.convoluteFloat32( filteredPixels,
+                        [-1,0,1,
+                         -2,0,2,
+                         -1,0,1]);
+            var id = Filters.createImageData(vertical.width, vertical.height);
+            for (var i=0; i<id.data.length; i+=4) {
+              var v = Math.abs(vertical.data[i]);
+              id.data[i] = v;
+              var h = Math.abs(horizontal.data[i]);
+              id.data[i+1] = h
+              id.data[i+2] = (v+h)/4;
+              id.data[i+3] = 255;
+            }
+            filteredPixels = id;
+            break;
+          case 'difference' :
+          case 'exclusion' :
+          case 'exclusion' :
+          case 'burn' :
+          case 'dodge' :
+          case 'add' :
+          case 'multiply' :
+            filteredPixels = pixelsToFilter;
+            filterContext.putImageData( pixelsToFilter, 0, 0 );
+            lastFrameContext.blendOnto( filterContext, filterSelect.value, {} );
+            filteredPixels = filterContext.getImageData(0,0,displayContext.canvas.width,displayContext.canvas.height);
+            // // override last frame
+            lastFrameContext.putImageData( pixelsToFilter, 0, 0 );
+            break;
+          case 'none' :
+            filteredPixels = pixelsToFilter;
+            break;
+        }
+
+        // draw to filter canvas and last frame canvas for comparison
+        filterContext.putImageData( filteredPixels, 0, 0 );
+
+        if(gif && autoCapture == true) addGifFrame();
+
+    }
+
+    function addGifFrame() {
+      // render gif
+      gifFrames++;
+      
+      if(autoCapture == false) document.getElementById('captureFrame').value = "Stop Motion "+gifFrames+'/'+GIF_FRAMES;
+      else document.getElementById('captureStream').value = "Gif Yo' Self "+gifFrames+'/'+GIF_FRAMES;
+
+      if(gifFrames < GIF_FRAMES) {
+        // add frame on webcam
+        gif.addFrame(filter, {
+          copy: true,
+          delay: 33
+        });
+      } else if(gifFrames == GIF_FRAMES) {
+        // finish
+        gif.render();
+        autoCapture = false;
+        lastFrame = null;
+
+        document.getElementById('captureFrame').value = "Stop Motion";
+        document.getElementById('captureStream').value = "Gif Yo' Self";
+      }
+    }
+
+    function initEvents() {
+        document.getElementById('captureStream').addEventListener('click', captureStream, false);
+        document.getElementById('captureFrame').addEventListener('click', captureFrame, false);
+    }
+
+    (function init() {
+        requestStreams();
+        initEvents();
+    }());
+  </script>
+</body>
+</html>
