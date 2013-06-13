@@ -1,0 +1,34 @@
+<!--
+data:text/html, <style> html,body { margin: 0; padding: 0; height: 100% } #note { width: 100%; height: 100% } </style> <script> var note, html, timeout; window.addEventListener('load', function() { note = document.getElementById('note'); html = document.getElementsByTagName('textarea')[0]; html.addEventListener('keyup', function(ev) { if (timeout) clearTimeout(timeout); timeout = setTimeout(saveNote, 100); }); restoreNote(); note.focus(); }); function saveNote() { localStorage.note = note.innerText; timeout = null; } function restoreNote() { note.innerText = localStorage.note || ''; } </script><textarea id="note" style="font-size: 1.5em; line-height: 1.5em; background: %23000; color: %233a3; width: 100%; height: 100%; border: none; outline: none; margin: 0; padding: 90px;" autofocus placeholder="wake up Neo..." ></textarea>
+-->
+
+<!DOCTYPE html>
+<head>
+<meta charset="utf-8">
+<title>Text Editor</title>
+<style> html,body { margin: 0; padding: 0; height: 100% } #note { width: 100%; height: 100% } </style>
+</head>
+<body>
+<textarea id="note" style="font-size: 1.5em; line-height: 1.5em; background: #000; color: #3a3; width: 100%; height: 100%; border: none; outline: none; margin: 0; padding: 90px;" autofocus placeholder="Type me..." ></textarea>
+<script> 
+var note, html, timeout; 
+// setup
+note = document.getElementById('note'); 
+window.addEventListener('keyup', function(ev) { 
+  if (timeout) clearTimeout(timeout); 
+  timeout = setTimeout(saveNote, 100); 
+}); 
+restoreNote(); 
+note.focus(); 
+
+function saveNote() { 
+  localStorage.note = note.value; 
+  console.log(localStorage.note);
+  timeout = null; 
+} 
+function restoreNote() { 
+  note.innerText = localStorage.note || ''; 
+} 
+</script>
+</body>
+</html>
