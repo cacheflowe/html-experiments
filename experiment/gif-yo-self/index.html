@@ -9,14 +9,14 @@
   <script src="filters.js"></script>
   <script src="gif.js"></script>
   <script src="context_blender.js"></script>
+  <script src="headtrackr.js"></script>
 </head>
 <body>
 
-  <video id="webcam" style="display:none"></video>
-  <canvas id="photo" style="display:none"></canvas>
-  <canvas id="lastFrame" style="display:none"></canvas>
-  <canvas id="display"></canvas>
-  <canvas id="filter"></canvas><br/>
+  <video  width="320" height="240" id="webcam"></video>
+  <canvas width="320" height="240" id="lastFrame" style="display:none"></canvas>
+  <canvas width="320" height="240" id="display" style="display:none"></canvas>
+  <canvas width="320" height="240" id="filter"></canvas><br/>
 
   <input type="button" id="captureStream" value="Gif Yo' Self" /> or 
   <input type="button" id="captureFrame" value="Stop Motion" />
@@ -46,6 +46,15 @@
       return decodeURIComponent(escape(window.atob( str )));
     }
 
+    // load ello img
+    var elloMask = new Image();
+    var elloLoaded = false;
+    elloMask.onload = function() {
+      elloLoaded = true;
+    };
+    elloMask.src = 'ello.png';
+
+
     // set up gif
     var gif, gifFrames;
     var GIF_FRAMES = 30;
@@ -66,6 +75,7 @@
         getAudio = false,
 
         video = document.getElementById('webcam'),
+        photo = document.getElementById('photo'),
         display = document.getElementById('display'),
         displayContext = display.getContext('2d');
         filter = document.getElementById('filter'),
@@ -187,6 +197,27 @@
         requestAnimationFrame(streamFeed);
         // put video frame into canvas
         displayContext.drawImage(video, 0, 0, display.width, display.height);
+
+                // add face-tracking
+        if( trackEvent != null && elloLoaded == true ) {
+          // clear canvas
+          // filterContext.clearRect(0,0,320,240);
+          // once we have stable tracking, draw rectangle
+          if (trackEvent.detection == "CS") {
+            var size = Math.max(trackEvent.width, trackEvent.height) * 0.9;
+            displayContext.save();
+            displayContext.translate(trackEvent.x, trackEvent.y)
+            displayContext.rotate(trackEvent.angle-(Math.PI/2));
+            displayContext.drawImage(elloMask, -size/2, -size/2, size, size);
+            // displayContext.strokeStyle = "#00CC00";
+            // displayContext.strokeRect((-(trackEvent.width/2)) >> 0, (-(trackEvent.height/2)) >> 0, trackEvent.width, trackEvent.height);
+            displayContext.restore();
+          }
+          // we've drawn it, now clear it out
+          // trackEvent = null;
+        }
+
+
         // copy pixels with filter to filter canvas
         pixelsToFilter = displayContext.getImageData(0,0,displayContext.canvas.width,displayContext.canvas.height);
 
@@ -269,7 +300,8 @@
 
         // draw to filter canvas and last frame canvas for comparison
         filterContext.putImageData( filteredPixels, 0, 0 );
-
+ 
+        // add gif frame if recording
         if(gif && autoCapture == true) addGifFrame();
 
     }
@@ -303,8 +335,50 @@
         document.getElementById('captureFrame').addEventListener('click', captureFrame, false);
     }
 
+
+
+    // headtrackr ------------------------------------------------------------------------------------------
+    var trackEvent = null;
+
+    // add some custom messaging
+      
+    var statusMessages = {
+      "whitebalance" : "checking for stability of camera whitebalance",
+      "detecting" : "Detecting face",
+      "hints" : "Hmm. Detecting the face is taking a long time",
+      "redetecting" : "Lost track of face, redetecting",
+      "lost" : "Lost track of face",
+      "found" : "Tracking face"
+    };
+      
+    var supportMessages = {
+      "no getUserMedia" : "Unfortunately, <a href='http://dev.w3.org/2011/webrtc/editor/getusermedia.html'>getUserMedia</a> is not supported in your browser. Try <a href='http://www.opera.com/browser/'>downloading Opera 12</a> or <a href='http://caniuse.com/stream'>another browser that supports getUserMedia</a>. Now using fallback video for facedetection.",
+      "no camera" : "No camera found. Using fallback video for facedetection."
+    };
+      
+    document.addEventListener("headtrackrStatus", function(event) {
+      if (event.status in supportMessages) {
+        console.log( supportMessages[event.status] );
+      } else if (event.status in statusMessages) {
+        console.log( statusMessages[event.status] );
+      }
+    }, true);
+      
+    // the face tracking setup
+      
+    var htracker = new headtrackr.Tracker({calcAngles : true, ui : false, headPosition : false});
+    htracker.init(webcam, display);
+    htracker.start();
+
+    streamFeed();
+      
+    // for each facetracking event received draw rectangle around tracked face on canvas
+    document.addEventListener("facetrackingEvent", function( event ) {
+      trackEvent = event;
+    });
+
     (function init() {
-        requestStreams();
+        // requestStreams();
         initEvents();
     }());
   </script>
