@@ -1,0 +1,146 @@
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+  <title>Box Roll</title>
+  <style>
+  * {
+    margin:0px;
+    padding:0px;
+  }
+  html, body {
+    background-color: #000;
+    color: #fff;
+    width: 100%;
+    height: 100%;
+  }
+  div, canvas {
+    position: absolute;
+    display: block;
+  }
+  #container {
+    width: 100%;
+    height: 100%;
+  }
+  </style>
+  <script type="text/javascript" src="../../javascripts/vendor/request-animation-frame.js"></script>
+  <script type="text/javascript" src="../../javascripts/modeset/canvas_util.js"></script>
+  <script type="text/javascript" src="../../javascripts/pixi/pixi.dev.js"></script>
+</head>
+
+<body>
+  <div id="container"></div>
+  <script>
+
+    // mouse tracking =========================================================================
+    document.getElementById('container').addEventListener('mousemove',onMouseMoved,false);
+    var _mouseX = 0;
+    var _mouseY = 0;
+    function onMouseMoved(e){
+      _mouseX = e.clientX;
+      _mouseY = e.clientY;
+    }
+
+    // Set up PIXI =========================================================================
+    var container = document.getElementById('container');
+    var pixi = PIXI.autoDetectRenderer(container.clientWidth, container.clientHeight, null, true, true);
+    container.appendChild(pixi.view);
+
+    // create an new instance of a pixi stage
+    var stage = new PIXI.Stage();
+    stage.interactive = true;
+
+    var fitCanvasToWindow = function() {
+      pixi.width = window.innerWidth;
+      pixi.height = window.innerHeight;
+      pixi.resize(window.innerWidth,window.innerHeight);
+      halfW = pixi.width / 2;
+      halfH = pixi.height / 2;
+    };
+    window.addEventListener('resize', function(event){
+      fitCanvasToWindow();
+    });
+    
+    var halfW = pixi.width / 2;
+    var halfH = pixi.height / 2;
+
+
+    var randColorComponent = function() {
+      return Math.round( Math.random() * 255 );
+    };
+
+    var _numGraphics = 100;
+
+    var _numRotations = 10;
+    var _numPoints = 5;
+    var _lineAlpha = 0.3;
+    var _lineDist = 500;
+    var _lineWeight = 1 + Math.random() * 30;
+    var _lineColor = CanvasUtil.rgb2hexNum(randColorComponent(), randColorComponent(), randColorComponent());
+
+    var newParams = function() {
+      for( var i=0; i < _numGraphics; i++ ) _rotations[i].clear();
+
+      _numRotations = 1 + Math.round( Math.random() * 30 );
+      _numPoints = 1 + Math.round( Math.random() * 30 );
+      _lineAlpha = Math.random();
+      _lineDist = Math.random() * 500;
+      _lineWeight = 1 + Math.random() * 30;
+      _lineColor = CanvasUtil.rgb2hexNum(randColorComponent(), randColorComponent(), randColorComponent());
+    };
+
+    // Create graphics canvas ================================================================
+    var _rotations = [];
+    for( var i=0; i < _numGraphics; i++ ) {
+      _rotations.push( new PIXI.Graphics() );
+      stage.addChild( _rotations[i] );
+      _rotations[i].position.x = halfW;
+      _rotations[i].position.y = halfH;
+      _rotations[i].rotation = ((Math.PI * 2) / _numRotations) * i;
+    }
+
+    var _points = [];
+    var newPoints = function() {
+      _points = [];
+      var x = Math.random() * 100;
+      var y = Math.random() * 100;
+      for( var i=0; i < _numPoints; i++ ) {
+        _points.push( { x: x, y: y } );
+        x += Math.random() * _lineDist - _lineDist / 2;
+        y += Math.random() * _lineDist - _lineDist / 2;
+      }
+    }; 
+    newPoints();
+
+    document.addEventListener('click',function(){
+      newParams();
+      newPoints();
+    });
+
+    // animate ==============================================================================
+    requestAnimFrame(animate);
+    function animate() {
+
+      for( var i=0; i < _numRotations; i++ ) {
+        _rotations[i].clear();
+        _rotations[i].lineStyle( _lineWeight, _lineColor, _lineAlpha );
+        _rotations[i].moveTo( _points[0].x, _points[0].y );
+        for( var j=1; j < _numPoints; j++ ) {
+          // _rotations[i].lineStyle( 3, 0xffffff, 0.8 );
+          _rotations[i].lineTo( _points[j].x, _points[j].y );
+          _rotations[i].rotation = ((Math.PI * 2) / _numRotations) * i;
+        }
+      }
+
+      // move
+      for( var j=0; j < _numPoints; j++ ) {
+        _points[j].x += Math.sin(Date.now()/(10000/j));
+        _points[j].y += Math.cos(Date.now()/(10000/j));
+      }
+      
+      pixi.render(stage);
+      requestAnimFrame( animate );
+    }
+
+  </script>
+</body>
+</html>

@@ -11,7 +11,8 @@
   </style>
   <script type="text/javascript" src="../../javascripts/modeset/math_util.js"></script>
   <script type="text/javascript" src="../../javascripts/modeset/canvas_util.js"></script>
-  <script type="text/javascript" src="../../javascripts/modeset/touch_tracker.js"></script>
+  <script type="text/javascript" src="../../javascripts/modeset/css-helper.js"></script>
+  <script type="text/javascript" src="../../javascripts/modeset/mouse-and-touch-tracker.js"></script>
 </head>
 
 <body>
@@ -109,10 +110,10 @@
   _canvas.style.border = '1px solid black';
 
   // follow the mouse and draw on start/move
-  _touchTracker = new MouseAndTouchTracker( _canvas, function( touchState ){
+  _touchTracker = new tts.MouseAndTouchTracker( _canvas, function( touchState ){
     switch( touchState ) {
-      case MouseAndTouchTracker.state_start :
-      case MouseAndTouchTracker.state_move :
+      case tts.MouseAndTouchTracker.state_start :
+      case tts.MouseAndTouchTracker.state_move :
         _row = _touchTracker.touchcurrent.y;
         _col = _touchTracker.touchcurrent.x;
         new ClusterPolygon();
@@ -137,7 +138,7 @@
   };
   
   // load and draw image
-  CanvasUtil.loadImageToContext("../../media/images/justin-rp-2.png", loadImageToContext);
+  CanvasUtil.loadImageToContext("../../media/images/justin-dvlp.jpg", loadImageToContext);
   CanvasUtil.loadImageToContextFromDrop( _canvas, function( apiFiles ){
     CanvasUtil.imagesSelected( apiFiles, loadImageToContext );
   });
