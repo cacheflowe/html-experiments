@@ -1,0 +1,103 @@
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+  <title>Box Roll</title>
+  <style>
+  * {
+    margin:0px;
+    padding:0px;
+  }
+  html, body {
+    background-color: #000;
+    color: #fff;
+    width: 100%;
+    height: 100%;
+  }
+  div, canvas {
+    position: absolute;
+    display: block;
+  }
+  #container {
+    width: 100%;
+    height: 100%;
+  }
+  </style>
+  <script type="text/javascript" src="../../javascripts/vendor/request-animation-frame.js"></script>
+  <script type="text/javascript" src="../../javascripts/pixi/pixi.dev.js"></script>
+</head>
+
+<body>
+  <div id="container"></div>
+  <script>
+
+    // mouse tracking =========================================================================
+    document.getElementById('container').addEventListener('mousemove',onMouseMoved,false);
+    var _mouseX = 0;
+    var _mouseY = 0;
+    function onMouseMoved(e){
+      _mouseX = e.clientX;
+      _mouseY = e.clientY;
+    }
+
+    // Set up PIXI =========================================================================
+    var container = document.getElementById('container');
+    var pixi = PIXI.autoDetectRenderer(container.clientWidth, container.clientHeight, null, true, true);
+    container.appendChild(pixi.view);
+
+    // create an new instance of a pixi stage
+    var stage = new PIXI.Stage();
+    stage.interactive = true;
+
+    var fitCanvasToWindow = function() {
+      pixi.width = window.innerWidth;
+      pixi.height = window.innerHeight;
+      pixi.resize(window.innerWidth,window.innerHeight);
+      halfW = pixi.width / 2;
+      halfH = pixi.height / 2;
+    };
+    window.addEventListener('resize', function(event){
+      fitCanvasToWindow();
+    });
+    
+    var halfW = pixi.width / 2;
+    var halfH = pixi.height / 2;
+
+
+
+    // Create graphics canvas ================================================================
+
+    var _graphics = new PIXI.Graphics();
+    stage.addChild( _graphics );
+
+
+
+    // animate ==============================================================================
+    requestAnimFrame(animate);
+    function animate() {
+      _graphics.clear();
+
+      var TWO_PI = Math.PI * 2;
+      var radius = 10;
+      for( var i=3; i < 30; i++) {
+        var segments = TWO_PI / i;
+        _graphics.lineStyle( 3, 0xffffff, 0.5 + 0.5 * Math.sin(i/10) );
+        _graphics.moveTo( halfW + Math.sin(0) * radius, halfH + Math.cos(0) * radius );
+        for( var j=0; j <= TWO_PI + segments*1.5; j += segments ) {
+          _graphics.lineTo( halfW + Math.sin(j) * radius, halfH + Math.cos(j) * radius );
+        }
+        radius += 16 * _mouseX/100;
+      }
+
+      pixi.render(stage);
+      requestAnimFrame( animate );
+    }
+
+
+
+
+
+
+
+  </script>
+</body>
+</html>
