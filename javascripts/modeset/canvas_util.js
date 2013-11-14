@@ -28,6 +28,24 @@ CanvasUtil.hexToCanvasColor = function( hexColor, opacity ) {
 };
 
 /**
+ *  Converts r, g, b, a values to a css-friendly hexadecimel string.
+ *  @return An rgb color string.
+ *  @use    {@code CanvasUtil.rgb2hex(0, 255, 0);}
+ */
+CanvasUtil.rgb2hex = function(r,g,b) {
+  return "#" + Number(0x1000000 + r*0x10000 + g*0x100 + b).toString(16).substring(1);
+};
+
+/**
+ *  Converts r, g, b, a values to a THREE/PIXI-friendly hexadecimel number.
+ *  @return An rgb color string.
+ *  @use    {@code CanvasUtil.rgb2hexNum(0, 255, 0);}
+ */
+CanvasUtil.rgb2hexNum = function(r,g,b) {
+  return Number("0x"+ Number(0x1000000 + r*0x10000 + g*0x100 + b).toString(16).substring(1));
+};
+
+/**
  *  Converts r, g, b, a values to canvas-friendly rgba string.
  *  @return An rgba color string.
  *  @use    {@code CanvasUtil.rgbToCanvasColor(0, 0, 0, 0.5);}
