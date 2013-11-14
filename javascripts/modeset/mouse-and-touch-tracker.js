@@ -1,11 +1,18 @@
-function MouseAndTouchTracker ( element, callback, isMouseUpTracking, disabledElements ) {
+var tts = tts || {};
+
+tts.MouseAndTouchTracker = function( element, callback, isMouseUpTracking, disabledElements ) {
+  var Point2d = function( x, y ) {
+    this.x = x || 0;
+    this.y = y || 0;
+  };
+
   // positioning / tracking coordinates
-  this.container_position = { x:0, y:0 };
-  this.touchstart = { x : 0, y : 0 };
-  this.touchcurrent = { x : 0, y : 0 };
-  this.touchmovedlast = { x : 0, y : 0 };
-  this.touchmoved = { x : 0, y : 0 };
-  this.touchspeed = { x : 0, y : 0 };
+  this.container_position = new Point2d();
+  this.touchstart = new Point2d();
+  this.touchcurrent = new Point2d();
+  this.touchmovedlast = new Point2d();
+  this.touchmoved = new Point2d();
+  this.touchspeed = new Point2d();
 
   // state flags
   this.is_touching = false;
@@ -19,6 +26,7 @@ function MouseAndTouchTracker ( element, callback, isMouseUpTracking, disabledEl
   this.is_mouseup_tracking = isMouseUpTracking;
   disabledElements = disabledElements || '';
   this.disabled_elements = disabledElements.split(' ') || [];
+  this.findPosHelper = null;
 
   // add touch event listeners with scope for removal
   var self = this;
@@ -43,36 +51,36 @@ function MouseAndTouchTracker ( element, callback, isMouseUpTracking, disabledEl
   }
 
   // hmm...
-  if(!navigator.userAgent.match(/Android/i)) this.recurseDisableImages( this.container ); // !this.is_mouseup_tracking &&
+  this.recurseDisableElements( this.container ); // !this.is_mouseup_tracking  // if(!navigator.userAgent.match(/Android/i))
 }
 
 // add static constants
-MouseAndTouchTracker.state_start = 'TOUCH_START';
-MouseAndTouchTracker.state_move = 'TOUCH_MOVE';
-MouseAndTouchTracker.state_end = 'TOUCH_END';
-MouseAndTouchTracker.state_enter = 'TOUCH_ENTER';
-MouseAndTouchTracker.state_leave = 'TOUCH_LEAVE';
+tts.MouseAndTouchTracker.state_start = 'TOUCH_START';
+tts.MouseAndTouchTracker.state_move = 'TOUCH_MOVE';
+tts.MouseAndTouchTracker.state_end = 'TOUCH_END';
+tts.MouseAndTouchTracker.state_enter = 'TOUCH_ENTER';
+tts.MouseAndTouchTracker.state_leave = 'TOUCH_LEAVE';
 
 // prevent clicking/dragging on children from interfering with container's dragging
-MouseAndTouchTracker.prototype.recurseDisableImages = function ( elem ) {
+tts.MouseAndTouchTracker.prototype.recurseDisableElements = function ( elem ) {
   if( elem ) {
     // disable clicking/dragging on selected element types
     if( elem.tagName && this.disabled_elements.indexOf( elem.tagName.toLowerCase() ) != -1 ) {  //  console.log('disabling: = '+elem.tagName.toLowerCase());
       try {
-        elem.onmousedown = function(e){ return false; };  // TODO: remove this if touch events, so we can click inside??
+        elem.onmousedown = function(e){ return false; };
         elem.onselectstart = function(){ return false; };
       } catch(err) {}
     }
     // loop through children and do the same
     if( elem.childNodes.length > 0 ){
       for( var i=0; i < elem.childNodes.length; i++ ) {
-        this.recurseDisableImages( elem.childNodes[i] );
+        this.recurseDisableElements( elem.childNodes[i] );
       }
     }
   }
 };
 
-MouseAndTouchTracker.prototype.disposeTouchListeners = function () {
+tts.MouseAndTouchTracker.prototype.disposeTouchListeners = function () {
   this.container.removeEventListener( "touchstart", this.startFunction, false );
   this.container.removeEventListener( "touchend", this.endFunction, false );
   this.container.removeEventListener( "touchcancel", this.endFunction, false );
@@ -80,18 +88,21 @@ MouseAndTouchTracker.prototype.disposeTouchListeners = function () {
   document.removeEventListener( "touchend", this.endDocumentFunction, false );
 };
 
-MouseAndTouchTracker.prototype.disposeMouseListeners = function () {
+tts.MouseAndTouchTracker.prototype.disposeMouseListeners = function () {
   if( this.container.attachEvent ) this.container.detachEvent( "onmousedown", this.startFunction ); else this.container.removeEventListener( "mousedown", this.startFunction, false );
   if( this.container.attachEvent ) this.container.detachEvent( "onmouseup", this.endFunction ); else this.container.removeEventListener( "mouseup", this.endFunction, false );
   if( document.attachEvent ) document.detachEvent( "onmouseup", this.endDocumentFunction ); else document.removeEventListener( "mouseup", this.endDocumentFunction, false );
   if( document.attachEvent ) document.detachEvent( "onmousemove", this.moveFunction ); else document.removeEventListener( "mousemove", this.moveFunction, false );
 };
 
-MouseAndTouchTracker.prototype.onStart = function ( touchEvent ) {
-  // HACK for Android - otherwise touchmove events don't fire. See: http://code.google.com/p/android/issues/detail?id=5491
+tts.MouseAndTouchTracker.prototype.onStart = function ( touchEvent ) {
   if( navigator.userAgent.match(/Android/i) ) {
-    if( touchEvent.preventDefault ) {
-      touchEvent.preventDefault();  // if( touchEvent.target.tagName.toLowerCase() != 'img' ) // potential fix for the Android image menu on tap & hold
+    var androidVersion = parseFloat( navigator.userAgent.match(/Android (\d+(?:\.\d+)+)/gi)[0].replace('Android ','') )
+    if( androidVersion < 3 ) {
+      // hack for Android 2.x - otherwise touchmove events don't fire. See: http://code.google.com/p/android/issues/detail?id=5491
+      if( touchEvent.preventDefault ) {
+        // touchEvent.preventDefault();  // if( touchEvent.target.tagName.toLowerCase() != 'img' ) // potential fix for the Android image menu on tap & hold
+      }
     }
   }
 
@@ -122,10 +133,10 @@ MouseAndTouchTracker.prototype.onStart = function ( touchEvent ) {
   }
 
   // callback
-  this.callback && this.callback( MouseAndTouchTracker.state_start, touchEvent )
+  this.callback && this.callback( tts.MouseAndTouchTracker.state_start, touchEvent )
 };
 
-MouseAndTouchTracker.prototype.onMove = function ( touchEvent ) {
+tts.MouseAndTouchTracker.prototype.onMove = function ( touchEvent ) {
   // get position of holder for relative mouse/touch position
   this.findPos(this.container);
 
@@ -147,22 +158,22 @@ MouseAndTouchTracker.prototype.onMove = function ( touchEvent ) {
 
   // pass on move event if touching, or if we're allowing tracking without needing to touch
   if( this.is_touching || this.is_mouseup_tracking )  {
-    this.callback && this.callback( MouseAndTouchTracker.state_move, touchEvent );
+    this.callback && this.callback( tts.MouseAndTouchTracker.state_move, touchEvent );
   }
 
   // check for mouse in/out and make the call if it's changed
   if(this.touchcurrent.x < 0 || this.touchcurrent.x > this.container.offsetWidth || this.touchcurrent.y < 0 || this.touchcurrent.y > this.container.offsetHeight) {
     if( this.touch_is_inside ) this.onLeave();
-      this.touch_is_inside = false;
+    this.touch_is_inside = false;
   } else {
     if( !this.touch_is_inside ) this.onEnter();
     this.touch_is_inside = true;
   }
 };
 
-MouseAndTouchTracker.prototype.onEnd = function ( touchEvent ) {
+tts.MouseAndTouchTracker.prototype.onEnd = function ( touchEvent ) {
   // callback before resetting all touch tracking props
-  this.callback && this.callback( MouseAndTouchTracker.state_end, touchEvent );
+  this.callback && this.callback( tts.MouseAndTouchTracker.state_end, touchEvent );
 
   // reset tracking vars
   this.is_touching = false;
@@ -174,19 +185,19 @@ MouseAndTouchTracker.prototype.onEnd = function ( touchEvent ) {
   }
 };
 
-MouseAndTouchTracker.prototype.onEnter = function () {
+tts.MouseAndTouchTracker.prototype.onEnter = function () {
   this.touchmoved.x = 0;
   this.touchmoved.y = 0;
   this.touchstart.x = this.touchcurrent.x;
   this.touchstart.y = this.touchcurrent.y;
-  this.callback && this.callback( MouseAndTouchTracker.state_enter, null );
+  this.callback && this.callback( tts.MouseAndTouchTracker.state_enter, null );
 };
 
-MouseAndTouchTracker.prototype.onLeave = function () {
-  this.callback && this.callback( MouseAndTouchTracker.state_leave, null );
+tts.MouseAndTouchTracker.prototype.onLeave = function () {
+  this.callback && this.callback( tts.MouseAndTouchTracker.state_leave, null );
 };
 
-MouseAndTouchTracker.prototype.dispose = function () {
+tts.MouseAndTouchTracker.prototype.dispose = function () {
   if( this.is_touch_capable ) {
     this.disposeTouchListeners();
   } else {
@@ -204,31 +215,22 @@ MouseAndTouchTracker.prototype.dispose = function () {
   this.touchmoved = false;
 };
 
-MouseAndTouchTracker.prototype.findPos = function(obj) {
-  // cobbled from:
-  // http://javascript.about.com/od/browserobjectmodel/a/bom12.htm
-  // http://www.quirksmode.org/js/findpos.html
-  // with original code to handle webkitTransform positioning added into the mix
-
-  // get page scroll offset
-  var scrollX = window.pageXOffset ? window.pageXOffset : document.documentElement.scrollLeft ? document.documentElement.scrollLeft : document.body.scrollLeft;
-  var scrollY = window.pageYOffset ? window.pageYOffset : document.documentElement.scrollTop ? document.documentElement.scrollTop : document.body.scrollTop;
-
-  // get element location
-  var curleft = curtop = 0;
-
-  if (obj.offsetParent) {
-    do {
-      if( typeof obj.parentNode.style !== 'undefined' && typeof obj.parentNode.style.webkitTransform !== 'undefined' && obj.parentNode.style.webkitTransform && obj.parentNode.style.webkitTransform.indexOf('translate3d') != -1 ) {   // last conditional fixes chrome on windows
-        var transformXYZArray = obj.parentNode.style.webkitTransform.split('translate3d(')[1].split(')')[0].replace(/ +/g, '').replace(/px+/g, '').split(',');
-        curleft += parseInt( transformXYZArray[0] );
-        curtop += parseInt( transformXYZArray[1] );
-      }
-      curleft += obj.offsetLeft;
-      curtop += obj.offsetTop;
-    } while (obj = obj.offsetParent);
-  }
+tts.MouseAndTouchTracker.prototype.findPos = function(obj) {
+  this.findPosHelper = tts.CSSHelper.findPos(obj);
   // store position from cumulative offset
-  this.container_position.x = curleft - scrollX;
-  this.container_position.y = curtop - scrollY;
+  this.container_position.x = this.findPosHelper[0];
+  this.container_position.y = this.findPosHelper[1];
 };
+
+// indexOf polyfill for old IE
+// originally from: http://soledadpenades.com/2007/05/17/arrayindexof-in-internet-explorer/
+if(!Array.indexOf){
+  Array.prototype.indexOf = function(obj){
+    for(var i=0; i<this.length; i++){
+      if(this[i]==obj){
+         return i;
+      }
+    }
+    return -1;
+  };
+}
