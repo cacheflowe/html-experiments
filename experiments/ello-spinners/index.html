@@ -1,0 +1,82 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<title>pixi.js example 1</title>
+	<style>
+		body {
+			margin: 0;
+			padding: 0;
+			background-color: #000000;
+		}
+	</style>
+	<script src="pixi.js"></script>
+
+</head>
+<body>
+	<script>
+
+	// create an new instance of a pixi stage
+	var stage = new PIXI.Stage(0xFFFFFF);
+
+	// create a renderer instance
+	var renderer = PIXI.autoDetectRenderer(window.innerWidth, window.innerHeight);
+
+	// add the renderer view element to the DOM
+	document.body.appendChild(renderer.view);
+
+	requestAnimFrame( animate );
+
+	// create a texture from an image path
+	var texture = PIXI.Texture.fromImage("Ello.Black.png");
+
+	// create logo sprite
+	var elloLogo = new PIXI.Sprite(texture);
+
+	var outerLogos = [];
+	var outerRadius = 600;
+	var numOuterLogos = 14;
+	var outerCircleSegment = (Math.PI * 2) / numOuterLogos;
+	for(var i=0; i < numOuterLogos; i++) {
+		var smallSprite = new PIXI.Sprite(texture);
+		smallSprite.scale.x = smallSprite.scale.y = 0.3;
+		smallSprite.anchor.x = smallSprite.anchor.y = 0.5;
+		stage.addChild(smallSprite);
+		outerLogos.push( smallSprite );
+	}
+
+	// center the sprites anchor point
+	elloLogo.anchor.x = 0.5;
+	elloLogo.anchor.y = 0.5;
+
+	// move the sprite t the center of the screen
+	elloLogo.position.x = window.innerWidth / 2;
+	elloLogo.position.y = window.innerHeight / 2;
+
+	stage.addChild(elloLogo);
+
+	function animate() {
+
+	    requestAnimFrame( animate );
+
+	    // just for fun, lets rotate mr rabbit a little
+	    elloLogo.scale.x = 1 + Math.sin(Date.now()/1000) * 0.1;
+	    elloLogo.scale.y = 1 + Math.sin(Date.now()/1000) * 0.1;
+	    elloLogo.rotation = Math.sin(Date.now()/700) * 0.1;
+
+	    var timeInc = Date.now()/5000;
+			for(var i=0; i < numOuterLogos; i++) {
+				outerLogos[i].position.x = window.innerWidth / 2 + outerRadius * elloLogo.scale.x * Math.sin(timeInc + outerCircleSegment * i);
+				outerLogos[i].position.y = window.innerHeight / 2 + outerRadius * elloLogo.scale.x * Math.cos(timeInc + outerCircleSegment * i);
+				outerLogos[i].rotation = Date.now()/1200 * (i+1);
+			}
+
+
+//	    console.log(stage.getBounds().width);
+	    // render the stage
+	    renderer.render(stage);
+	}
+
+	</script>
+
+	</body>
+</html>
