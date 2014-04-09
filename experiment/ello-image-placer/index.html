@@ -1,0 +1,287 @@
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+  <title>Ello Image Placer</title>
+  <style>
+  * {
+    margin:0px;
+    padding:0px;
+  }
+  html, body {
+    background-color: #000;
+    color: #fff;
+    width: 100%;
+    height: 100%;
+  }
+  div, canvas {
+    /*position: absolute;*/
+    display: block;
+  }
+  #draw {
+    display: none;
+  }
+  #container {
+/*    width: 100%;
+    height: 100%;
+*/  }
+  canvas.drop-over {
+    opacity: 0.5;
+  }
+  input {
+/*    position: absolute;
+    z-index: 9;
+*/  }
+  img {
+    clear: both;
+  }
+  </style>
+  <script type="text/javascript" src="../../javascripts/vendor/request-animation-frame.js"></script>
+  <script type="text/javascript" src="../../javascripts/modeset/canvas_util.js"></script>
+  <script type="text/javascript" src="../../javascripts/modeset/math_util.js"></script>
+  <script type="text/javascript" src="../../javascripts/pixi/pixi.js"></script>
+  <script type="text/javascript" src="../../javascripts/vendor/hammer.min.js"></script>
+</head>
+
+<body>
+  <div id="container"></div>
+  <canvas id="draw"></canvas>
+  <input type="file" id="file-input" size="10" multiple="false" />
+  <button id="export" >export</button>
+  <div><img id="export-img" /></div>
+  <script>
+
+    // mouse tracking =========================================================================
+    document.getElementById('container').addEventListener('mousemove',onMouseMoved,false);
+    var _mouseX = 0;
+    var _mouseY = 0;
+    function onMouseMoved(e){
+      _mouseX = e.clientX;
+      _mouseY = e.clientY;
+    }
+
+    // Set up PIXI =========================================================================
+    var container = document.getElementById('container');
+    var pixi = PIXI.autoDetectRenderer(container.clientWidth, container.clientHeight, null, true, true);
+    container.appendChild(pixi.view);
+
+    // create an new instance of a pixi stage
+    var stage = new PIXI.Stage();
+    stage.interactive = true;
+
+    var fitCanvasToWindow = function() {
+      pixi.width = window.innerWidth;
+      pixi.height = window.innerHeight;
+      pixi.resize(window.innerWidth,window.innerHeight);
+      halfW = pixi.width / 2;
+      halfH = pixi.height / 2;
+    };
+    window.addEventListener('resize', function(event){
+      fitCanvasToWindow();
+    });
+    
+    var halfW = pixi.width / 2;
+    var halfH = pixi.height / 2;
+
+    // add image drop =========================================================================
+    var _canvas = document.getElementById("draw");
+    var _fileInput = document.getElementById("file-input");
+    var _context = _canvas.getContext("2d");
+    var _canvasSource = null;
+    var _contextSource = null;
+    var _width;
+    var _height;
+    _canvas.style.border = '1px solid black';
+
+    var loadImageToContext = function( ctx, image ){
+      // store the image to read pixels from
+      _contextSource = ctx;
+      // set drawing canvas size based on original, and draw the original in there before we start drawing our own layers
+      _width = _canvas.width = ctx.canvas.width;
+      _height = _canvas.height = ctx.canvas.height;
+      _context.drawImage( image, 0, 0 );
+      pixi.resize(_width,_height);
+      console.log(_canvas.toDataURL());
+
+      // place base64-encoded image into PIXI scene
+      var sprite = PIXI.Sprite.fromImage(_canvas.toDataURL(), false);
+      stage.addChild(sprite);
+      sprite.anchor.x = 0;
+      sprite.anchor.y = 0;
+
+      // keep ello logo on top
+      stage.addChild(elloLogo);
+      elloLogo.position.x = _width/2;
+      elloLogo.position.y = _height/2;
+
+    };
+    
+    // load and draw image
+    CanvasUtil.loadImageToContext("../../media/images/mode-set-hat.png", loadImageToContext);
+    CanvasUtil.loadImageToContextFromDrop( pixi.view, function( apiFiles ){
+      CanvasUtil.imagesSelected( apiFiles, loadImageToContext );
+    });
+    CanvasUtil.loadImageToContextFromInput( _fileInput, function( apiFiles ){
+      CanvasUtil.imagesSelected( apiFiles, loadImageToContext );
+    });
+
+    // canvas saving
+    // _canvas.addEventListener('click',function(){
+    //   CanvasUtil.saveCanvas( _context );
+    // },false);
+
+    // set up Ello logo ==============================================================================
+    var draggingHandle = false;
+    var startDragAngle = 999;
+    var startRotation = 0;
+    var startScale = -1;
+    var curScale = 1;
+    var scaleDist = -1;
+    var handles = null;
+
+    var logoWidth = 0;
+    var logoHeight = 0;
+
+    var createHandle = function() {
+      var graphics = new PIXI.Graphics();
+      graphics.beginFill( 0xffffff, 1 );
+      graphics.drawRect( -10, -10, 20, 20 );
+      graphics.endFill();
+      graphics.beginFill( 0x000000, 1 );
+      graphics.drawRect( -8, -8, 16, 16 );
+      graphics.endFill();
+
+      graphics.hitArea = new PIXI.Rectangle( -30, -30, 60, 60 );
+      graphics.interactive = true;
+
+      graphics.mousedown = graphics.touchstart = function(e) {
+        draggingHandle = true;
+      };
+      graphics.mouseup = graphics.touchend = function(e) {
+        startDragAngle = 999;
+        startScale = -1;
+        draggingHandle = false;
+      };
+      graphics.mouseupoutside = graphics.touchendoutside = function(e) {
+        startDragAngle = 999;
+        startScale = -1;
+        draggingHandle = false;
+      };
+      return graphics;
+    };
+
+
+    var texture = PIXI.Texture.fromImage("Ello.Black.png");
+    texture.addEventListener('update', function(e){
+      // store original image size
+      logoWidth = elloLogo.width;
+      logoHeight = elloLogo.height;
+
+      // add corner handles
+      var handle1 = createHandle();
+      handle1.position.x = -elloLogo.width / 2;
+      handle1.position.y = -elloLogo.height / 2;
+      elloLogo.addChild( handle1 );
+
+      var handle2 = createHandle();
+      handle2.position.x = elloLogo.width / 2;
+      handle2.position.y = -elloLogo.height / 2;
+      elloLogo.addChild( handle2 );
+
+      var handle3 = createHandle();
+      handle3.position.x = elloLogo.width / 2;
+      handle3.position.y = elloLogo.height / 2;
+      elloLogo.addChild( handle3 );
+
+      var handle4 = createHandle();
+      handle4.position.x = -elloLogo.width / 2;
+      handle4.position.y = elloLogo.height / 2;
+      elloLogo.addChild( handle4 );
+
+      handles = [handle1, handle2, handle3, handle4];
+
+      // scale down initial ello logo size
+      curScale = 0.5;
+      elloLogo.scale.x = elloLogo.scale.y = curScale;
+    });
+    
+    var elloLogo = new PIXI.Sprite(texture);
+    stage.addChild(elloLogo);
+    elloLogo.anchor.x = 0.5;
+    elloLogo.anchor.y = 0.5;
+    elloLogo.interactive = true;
+
+
+    var circleToSquareCorner = function( squareSize ) {
+      return (squareSize/2)*(Math.sqrt(2)-1);
+    };
+
+    // set up touch/drag ==============================================================================
+    var startDragX = 0;
+    var startDragY = 0;
+    var draggingLogo = false;
+
+    elloLogo.mousedown = elloLogo.touchstart = function(e) {
+      startDragX = elloLogo.position.x;
+      startDragY = elloLogo.position.y;
+      draggingLogo = true;
+    };
+    elloLogo.mouseup = elloLogo.touchend = function(e) {
+      draggingLogo = false;
+    };
+    elloLogo.mouseupoutside = elloLogo.touchendoutside = function(e) {
+      draggingLogo = false;
+    };
+
+    var dragEvent = function(e) {
+      if( draggingHandle == true ) {
+        // handle rotation ---
+        if( startDragAngle == 999 ) {
+          startDragAngle = MathUtil.getAngleToTarget( e.gesture.center.clientX, e.gesture.center.clientY, elloLogo.position.x, elloLogo.position.y );
+          startRotation = elloLogo.rotation;
+        } 
+        var curDragAngle = MathUtil.getAngleToTarget( e.gesture.center.clientX, e.gesture.center.clientY, elloLogo.position.x, elloLogo.position.y );
+        var angleDelta = startDragAngle - curDragAngle;
+        elloLogo.rotation = startRotation - MathUtil.degreesToRadians( angleDelta );
+        // handle scale (subtract the distance from the circle radius to the square corner)
+        scaleDist = MathUtil.getDistance( e.gesture.center.clientX, e.gesture.center.clientY, elloLogo.position.x, elloLogo.position.y );
+        elloLogo.scale.x = elloLogo.scale.y = scaleDist / ( logoWidth - circleToSquareCorner(logoWidth) );
+        for( var i=0; i < handles.length; i++ ) {
+          handles[i].scale.x = handles[i].scale.y = 2 - elloLogo.scale.x;
+        }
+
+      } else if ( draggingLogo == true ) {
+        elloLogo.position.x = startDragX + e.gesture.deltaX;
+        elloLogo.position.y = startDragY + e.gesture.deltaY;
+      }
+    };
+
+    var hammertime = Hammer( container, {
+      prevent_default: true,
+      no_mouseevents: true
+    })
+    hammertime.on('drag', dragEvent);
+
+
+    // animate ==============================================================================
+    requestAnimFrame(animate);
+    function animate() {
+      
+      pixi.render(stage);
+      requestAnimFrame( animate );
+    }
+
+    // export ===============================================================================
+    document.getElementById('export').addEventListener('click',function(){
+      for( var i=0; i < handles.length; i++ ) handles[i].visible = false;
+
+      pixi.render(stage); // <- important!
+      var base64img = pixi.view.toDataURL()
+
+      for( var i=0; i < handles.length; i++ ) handles[i].visible = true;
+      document.getElementById('export-img').src = base64img;
+      // console.log(base64img);
+    });
+
+  </script>
+</body>
+</html>

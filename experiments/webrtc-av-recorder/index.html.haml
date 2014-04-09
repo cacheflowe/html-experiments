@@ -1,0 +1,18 @@
+= content_for :stylesheets do
+  :sass
+    .sg-todo
+      background: #ff00ff
+      color: white
+      list-style-position: inside
+      padding: 0.5em
+      margin: 1rem 0
+
+
+%h2.heading.heading-large Dev Playground
+
+%div(data-bindable="video-capture")
+  %button#request-media-access Request A/V
+  %button#start-recording Start Recording
+  %button#stop-recording Stop Recording
+  %video#webcam.hidden(width="320" height="240")
+  %canvas#video-capture(width="320" height="240")

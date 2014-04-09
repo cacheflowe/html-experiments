@@ -1,5 +1,7 @@
 var MathUtil = MathUtil || {};
 
+MathUtil.TWO_PI = Math.PI * 2;
+
 /**
  *  Calculates a random number within a minimum and maximum range.
  *  @param  min the value for the bottom range.
@@ -38,6 +40,28 @@ MathUtil.getPercentWithinRange = function( bottomRange, topRange, valueInRange )
   // return percentage or normalized values 
   return ( valueInRange / ( topRange - bottomRange ) );
 };
+
+MathUtil.lerpByPercent = function(val1, val2, percent) {
+    // 0.5 percent is an even mix
+    return val1 + (val2 - val1) * percent;
+};
+
+MathUtil.map = function(val, inputMin, inputMax, outputMin, outputMax)
+{
+      /*
+      var inputRange = inputMax - inputMin
+      
+      var inputFraction = (val - inputMin)/inputRange
+      
+      var outputRange = outputMax - outputMin
+      
+      var output = (outputRange * inputFraction) + outputMin
+      
+      return output
+      */
+      
+  return ((outputMax - outputMin) * ((val - inputMin)/(inputMax - inputMin))) + outputMin;
+}
 
 /**
  *  Returns a percentage of a value in between 2 other numbers.
@@ -172,6 +196,20 @@ MathUtil.getDistance = function ( x1, y1, x2, y2 ) {
   return Math.abs( Math.sqrt(a*a + b*b) );
 };
 
+    
+/**
+ *  Keep a value between a min & max.
+ *  @param  val  The value to clamp
+ *  @param  min  The minimum value
+ *  @param  max  The maximum value
+ *  @return The clamped value
+ *  @use    {@code var singleDigit = MathUtil.getDistance( value, 0, 9 );}
+ */
+MathUtil.clamp = function ( val, min, max ) {
+  return Math.max(min, Math.min(max, val));
+};
+
+
 /**
  *  Keep an angle between 0-360
  *  @param  angle the angle to constrain
@@ -185,6 +223,18 @@ MathUtil.constrainAngle = function( angle ) {
 };
 
 /**
+ *  Keep an angle between 0-360
+ *  @param  angle the angle to constrain
+ *  @return The normalized angle
+ *  @use    {@code var angle = MathUtil.constrainAngle( 540 );}
+ */
+MathUtil.constrainRadians = function( radians ) {
+  if( radians < 0 ) return radians + Math.PI*2;
+  if( radians > Math.PI*2 ) return radians - Math.PI*2;
+  return radians;
+};
+
+/**
  *  Get the angle fron current coordinate to target coordinate
  *  @param  x1  first point's x position
  *  @param  y1  first point's y position
@@ -195,6 +245,19 @@ MathUtil.constrainAngle = function( angle ) {
  */
 MathUtil.getAngleToTarget = function( x1, y1, x2, y2 ) {
   return MathUtil.constrainAngle( -Math.atan2( x1 - x2, y1 - y2 ) * 180 / Math.PI );
+};
+
+/**
+ *  Get the radians fron current coordinate to target coordinate
+ *  @param  x1  first point's x position
+ *  @param  y1  first point's y position
+ *  @param  x2  second point's x position
+ *  @param  y2  second point's y position
+ *  @return The radians from point 1 and 2
+ *  @use    {@code var angle = MathUtil.getRadiansToTarget( 0, 0, 5, 5 );}
+ */
+MathUtil.getRadiansToTarget = function( x1, y1, x2, y2 ) {
+  return -Math.atan2( x1 - x2, y1 - y2 );
 };
 
 /**

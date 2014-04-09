@@ -73,6 +73,31 @@ CanvasUtil.rgbDifference = function( r1, g1, b1, r2, g2, b2 ) {
 };
 
 /**
+ *  Converts a hex color value to a darker or lighter version. Original code from from: http://www.sitepoint.com/javascript-generate-lighter-darker-color/
+ *  @return A hex color string.
+ *  @use    {@code CanvasUtil.colorLuminance('00ff00', 0.5);}
+ */
+CanvasUtil.colorLuminance = function(hex, lum) {
+  // validate hex string
+  hex = hex.replace( "#", "" );
+  hex = String(hex).replace(/[^0-9a-f]/gi, '');
+  if (hex.length < 6) {
+    hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+  }
+  lum = lum || 0;
+
+  // convert to decimal and change luminosity
+  var rgb = "#", c, i;
+  for (i = 0; i < 3; i++) {
+    c = parseInt(hex.substr(i*2,2), 16);
+    c = Math.round(Math.min(Math.max(0, c + (c * lum)), 255)).toString(16);
+    rgb += ("00"+c).substr(c.length);
+  }
+
+  return rgb;
+};
+
+/**
  *  Draws a filled circle. Original code from Robin W. Spencer (http://scaledinnovation.com).
  *  @use    {@code CanvasUtil.drawCircle( context, 50, 50, 40 );}
  */
@@ -112,6 +137,20 @@ CanvasUtil.pixelColorToCanvasColor = function( context, x, y ) {
   return CanvasUtil.rgbToCanvasColor( color[0], color[1], color[2], 1 );
 };
 
+CanvasUtil.loadImageToCanvas = function( imagePath, callback ) {
+    var image = new Image();
+    image.crossOrigin = 'anonymous';
+    image.onload = function() {
+        var canvas = document.createElement("canvas");
+        canvas.width = image.width;
+        canvas.height = image.height;
+        var context = canvas.getContext("2d");
+        context.drawImage( image, 0, 0 );
+        callback( canvas, image );
+    };
+    image.src = imagePath;
+};
+
 // useful for grabbing an image and caching it as a pixel source
 CanvasUtil.loadImageToContext = function( imagePath, callback ) {
     var image = new Image();
@@ -135,13 +174,26 @@ CanvasUtil.loadImageToContextFromInput = function( inputEl, callback ) {
 };
 
 CanvasUtil.loadImageToContextFromDrop = function( dropEl, callback ) {
-  dropEl.setAttribute('dragenter', "return false");
-  dropEl.setAttribute('dragover', "return false");
+  dropEl.addEventListener('dragenter', function(e){
+    e.stopPropagation();  
+    e.preventDefault();  
+    dropEl.classList.add('drop-over'); 
+  });
+  dropEl.addEventListener('dragover', function(e){
+    e.stopPropagation();  
+    e.preventDefault();  
+  });
+  dropEl.addEventListener('dragleave', function(e){
+    e.stopPropagation();  
+    e.preventDefault();  
+    dropEl.classList.remove('drop-over'); 
+  });
   dropEl.addEventListener('drop', function(e){
-    callback( e.dataTransfer.files ); 
     e.stopPropagation();  
     e.preventDefault();   
-  });
+    callback( e.target.files || e.dataTransfer.files ); 
+    dropEl.classList.remove('drop-over'); 
+  }, false);
 };
 
 CanvasUtil.imagesSelected = function( myFiles, callback ) {

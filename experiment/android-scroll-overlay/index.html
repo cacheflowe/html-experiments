@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Android Scroll Overlay Test</title>
+    <meta content='IE=edge,chrome=1' http-equiv='X-UA-Compatible'>
+    <meta content='text/html; charset=UTF-8' http-equiv='Content-Type'>
+    <meta content='CacheFlowe' name='author'>
+    <meta content='no' name='imagetoolbar'>
+    <meta content='width=device-width, initial-scale=1, maximum-scale=2, user-scalable=1' name='viewport'>
+    <style>
+      html, body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        background-color: #ccc;
+        font-size: 99px;
+      }
+      #scroll-under {
+        position: absolute;
+        width: 100%;
+        height: 75%;
+        text-align: right;
+        background-color: #ff0;
+        -webkit-overflow-scrolling: touch;
+        overflow-y: scroll;
+        -webkit-transform: translate3d(0,0,0);
+      }
+      #scroll-over {
+        overflow: hidden;
+        position: absolute;
+        width: 50%;
+        height: 75%;
+        text-align: left;
+        background-color: #0ff;
+        -webkit-overflow-scrolling: touch;
+        overflow-y: scroll;
+        -webkit-transform: translate3d(0,0,0);
+      }
+      p {
+        font-family: Helvetica, Arial, sans-serif;
+        font-size: 1em;
+        color: #333;
+        padding: 1em;
+        border: 1px solid #bbb;
+        float: left;
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="scroll-under">
+      <p>Testing Under</p><p>Testing Under</p><p>Testing Under</p><p>Testing Under</p><p>Testing Under</p><p>Testing Under</p><p>Testing Under</p><p>Testing Under</p><p>Testing Under</p><p>Testing Under</p></div>
+    <div id="scroll-over">Testing Over<!-- <br/>Testing Over<br/>Testing Over<br/>Testing Over<br/>Testing Over<br/>Testing Over<br/>Testing Over<br/>Testing Over<br/>Testing Over<br/>Testing Over<br/> --></div>
+    <script src="../../javascripts/vendor/jquery-2.0.3.min.js" type="text/javascript"></script>
+    <script>
+
+    </script>
+  </body>
+</html>
