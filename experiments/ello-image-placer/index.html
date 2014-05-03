@@ -21,9 +21,10 @@
     display: none;
   }
   #container {
-/*    width: 100%;
-    height: 100%;
-*/  }
+    position: absolute;
+    left: 400px;
+    top: 500px;
+  }
   canvas.drop-over {
     opacity: 0.5;
   }
@@ -39,7 +40,7 @@
   <script type="text/javascript" src="../../javascripts/modeset/canvas_util.js"></script>
   <script type="text/javascript" src="../../javascripts/modeset/math_util.js"></script>
   <script type="text/javascript" src="../../javascripts/pixi/pixi.js"></script>
-  <script type="text/javascript" src="../../javascripts/vendor/hammer.min.js"></script>
+  <script type="text/javascript" src="../../javascripts/modeset/mouse-and-touch-tracker.js"></script>
 </head>
 
 <body>
@@ -50,18 +51,47 @@
   <div><img id="export-img" /></div>
   <script>
 
-    // mouse tracking =========================================================================
-    document.getElementById('container').addEventListener('mousemove',onMouseMoved,false);
-    var _mouseX = 0;
-    var _mouseY = 0;
-    function onMouseMoved(e){
-      _mouseX = e.clientX;
-      _mouseY = e.clientY;
-    }
+    var tts = tts || {};
+    tts.CSSHelper = tts.CSSHelper || {};
+
+    // find the location of an element on the page, taking into consideration either native left/top or CSS transform positioning, and page scroll offset
+    // cobbled from:
+    // http://javascript.about.com/od/browserobjectmodel/a/bom12.htm
+    // http://www.quirksmode.org/js/findpos.html
+    // with original code to handle webkitTransform positioning added into the mix
+    tts.CSSHelper.posArray = [0,0]; // reuse to avoid creating new objects
+    tts.CSSHelper.findPos = function(obj) {
+      // get page scroll offset
+      var scrollX = window.pageXOffset ? window.pageXOffset : document.documentElement.scrollLeft ? document.documentElement.scrollLeft : document.body.scrollLeft;
+      var scrollY = window.pageYOffset ? window.pageYOffset : document.documentElement.scrollTop ? document.documentElement.scrollTop : document.body.scrollTop;
+
+      // get element location
+      var curleft = curtop = 0;
+
+      if (obj.offsetParent) {
+        do {
+          // add up css transform: translate3d positioning
+          if( obj.offsetParent && typeof obj.offsetParent.style !== 'undefined' && typeof obj.offsetParent.style[ tts.CSSHelper.transformString ] !== 'undefined' && obj.offsetParent.style[ tts.CSSHelper.transformString ] ) {  // last conditional fixes chrome on windows
+            var transformXYZArray = obj.offsetParent.style[ tts.CSSHelper.transformString ].split('translate3d(')[1].split(')')[0].replace(/ +/g, '').replace(/px+/g, '').split(',');
+            curleft += parseInt( transformXYZArray[0] );
+            curtop += parseInt( transformXYZArray[1] );
+          }
+          // add normal positioning offset
+          curleft += obj.offsetLeft;
+          curtop += obj.offsetTop;
+        } while (obj = obj.offsetParent);
+      }
+
+      // return position from cumulative offset
+      tts.CSSHelper.posArray[0] = curleft - scrollX;
+      tts.CSSHelper.posArray[1] = curtop - scrollY;
+      return tts.CSSHelper.posArray;
+    };
 
     // Set up PIXI =========================================================================
     var container = document.getElementById('container');
     var pixi = PIXI.autoDetectRenderer(container.clientWidth, container.clientHeight, null, true, true);
+    //var pixi = new PIXI.CanvasRenderer(container.clientWidth, container.clientHeight, null, true);
     container.appendChild(pixi.view);
 
     // create an new instance of a pixi stage
@@ -232,34 +262,38 @@
       draggingLogo = false;
     };
 
-    var dragEvent = function(e) {
+    var dragEvent = function( mouseX, mouseY, mouseMovedX, mouseMovedY ) {
       if( draggingHandle == true ) {
         // handle rotation ---
         if( startDragAngle == 999 ) {
-          startDragAngle = MathUtil.getAngleToTarget( e.gesture.center.clientX, e.gesture.center.clientY, elloLogo.position.x, elloLogo.position.y );
+          startDragAngle = MathUtil.getAngleToTarget( mouseX, mouseY, elloLogo.position.x, elloLogo.position.y );
           startRotation = elloLogo.rotation;
         } 
-        var curDragAngle = MathUtil.getAngleToTarget( e.gesture.center.clientX, e.gesture.center.clientY, elloLogo.position.x, elloLogo.position.y );
+        var curDragAngle = MathUtil.getAngleToTarget( mouseX, mouseY, elloLogo.position.x, elloLogo.position.y );
         var angleDelta = startDragAngle - curDragAngle;
         elloLogo.rotation = startRotation - MathUtil.degreesToRadians( angleDelta );
         // handle scale (subtract the distance from the circle radius to the square corner)
-        scaleDist = MathUtil.getDistance( e.gesture.center.clientX, e.gesture.center.clientY, elloLogo.position.x, elloLogo.position.y );
+        scaleDist = MathUtil.getDistance( mouseX, mouseY, elloLogo.position.x, elloLogo.position.y );
         elloLogo.scale.x = elloLogo.scale.y = scaleDist / ( logoWidth - circleToSquareCorner(logoWidth) );
         for( var i=0; i < handles.length; i++ ) {
           handles[i].scale.x = handles[i].scale.y = 2 - elloLogo.scale.x;
         }
 
       } else if ( draggingLogo == true ) {
-        elloLogo.position.x = startDragX + e.gesture.deltaX;
-        elloLogo.position.y = startDragY + e.gesture.deltaY;
+        elloLogo.position.x = startDragX + mouseMovedX;
+        elloLogo.position.y = startDragY + mouseMovedY;
       }
     };
 
-    var hammertime = Hammer( container, {
-      prevent_default: true,
-      no_mouseevents: true
-    })
-    hammertime.on('drag', dragEvent);
+    console.log(container);
+    var _touchTracker = new tts.MouseAndTouchTracker( container, function( touchState ){
+      switch( touchState ) {
+        case tts.MouseAndTouchTracker.state_start :
+        case tts.MouseAndTouchTracker.state_move :
+          dragEvent( _touchTracker.touchcurrent.x, _touchTracker.touchcurrent.y, _touchTracker.touchmoved.x, _touchTracker.touchmoved.y );
+          break;
+      }
+    }, false, 'canvas' );
 
 
     // animate ==============================================================================
