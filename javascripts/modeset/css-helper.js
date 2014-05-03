@@ -76,6 +76,11 @@ tts.CSSHelper = function() {
     }
   };
 
+  var update2DRotation = function ( element, rot ) {
+    element.style[ _transformString ] = buildRotationTranslateString( rot );
+  };
+
+
   var buildPositionTranslateString = function( x, y ) {
     return " translate3d( " + tts.CSSHelper.roundForCSS( x ) + "px, " + tts.CSSHelper.roundForCSS( y ) + "px, 0px )";
   };
@@ -90,6 +95,7 @@ tts.CSSHelper = function() {
 
   return {
     update2DPosition : update2DPosition,
+    update2DRotation : update2DRotation,
     getVendor: getVendor,
     getCssTransformsEnabled : getCssTransformsEnabled,
     setBackfaceVisbility : setBackfaceVisbility
@@ -102,7 +108,7 @@ tts.CSSHelper.getVendorPrefix = function( styleSuffix ) {
   // see if the major browser vendor prefixes are detected for css transforms
   var checkVendor = function() {
     if(!navigator.userAgent.toLowerCase().match(/msie 9/i)){
-      var vendors = ['Moz', 'Webkit'];  // should have 'ms' also, but IE9 transform doesn't work, even though it claims to exist. so, we leave it out
+      var vendors = ['Moz', 'Webkit', 'ms'];  // should have 'ms' also, but IE9 transform doesn't work, even though it claims to exist. so, we leave it out
       var element = findElementWithStyle();
       for( var vendor in vendors ) {
         if( element.style[ vendors[vendor] + styleSuffix ] !== undefined ) {

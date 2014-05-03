@@ -1,6 +1,6 @@
 var tts = tts || {};
 
-tts.MouseAndTouchTracker = function( element, callback, isMouseUpTracking, disabledElements ) {
+tts.MouseAndTouchTracker = function( element, callback, isMouseUpTracking, disabledElements, disablesRightClick ) {
   var Point2d = function( x, y ) {
     this.x = x || 0;
     this.y = y || 0;
@@ -22,6 +22,8 @@ tts.MouseAndTouchTracker = function( element, callback, isMouseUpTracking, disab
 
   // store parameters
   this.container = element;
+  this.containerW = 0;
+  this.containerH = 0;
   this.callback = callback;
   this.is_mouseup_tracking = isMouseUpTracking;
   disabledElements = disabledElements || '';
@@ -52,6 +54,7 @@ tts.MouseAndTouchTracker = function( element, callback, isMouseUpTracking, disab
 
   // hmm...
   this.recurseDisableElements( this.container ); // !this.is_mouseup_tracking  // if(!navigator.userAgent.match(/Android/i))
+  if( disablesRightClick == true ) this.disableRightClick();
 }
 
 // add static constants
@@ -80,6 +83,10 @@ tts.MouseAndTouchTracker.prototype.recurseDisableElements = function ( elem ) {
   }
 };
 
+tts.MouseAndTouchTracker.prototype.disableRightClick = function () {
+  this.container.oncontextmenu = function(e){ return false; };
+};
+
 tts.MouseAndTouchTracker.prototype.disposeTouchListeners = function () {
   this.container.removeEventListener( "touchstart", this.startFunction, false );
   this.container.removeEventListener( "touchend", this.endFunction, false );
@@ -105,6 +112,10 @@ tts.MouseAndTouchTracker.prototype.onStart = function ( touchEvent ) {
       }
     }
   }
+
+  // reset container size
+  this.containerW = this.container.offsetWidth;
+  this.containerH = this.container.offsetHeight;
 
   // get page position of container for relative mouse/touch position
   this.findPos( this.container );
@@ -138,7 +149,7 @@ tts.MouseAndTouchTracker.prototype.onStart = function ( touchEvent ) {
 
 tts.MouseAndTouchTracker.prototype.onMove = function ( touchEvent ) {
   // get position of holder for relative mouse/touch position
-  this.findPos(this.container);
+  // this.findPos(this.container);
 
   // store last position
   this.touchmovedlast.x = this.touchmoved.x;
@@ -162,7 +173,7 @@ tts.MouseAndTouchTracker.prototype.onMove = function ( touchEvent ) {
   }
 
   // check for mouse in/out and make the call if it's changed
-  if(this.touchcurrent.x < 0 || this.touchcurrent.x > this.container.offsetWidth || this.touchcurrent.y < 0 || this.touchcurrent.y > this.container.offsetHeight) {
+  if(this.touchcurrent.x < 0 || this.touchcurrent.x > this.containerW || this.touchcurrent.y < 0 || this.touchcurrent.y > this.containerH) {
     if( this.touch_is_inside ) this.onLeave();
     this.touch_is_inside = false;
   } else {
@@ -195,6 +206,12 @@ tts.MouseAndTouchTracker.prototype.onEnter = function () {
 
 tts.MouseAndTouchTracker.prototype.onLeave = function () {
   this.callback && this.callback( tts.MouseAndTouchTracker.state_leave, null );
+};
+
+tts.MouseAndTouchTracker.prototype.calculateDimensions = function () {
+  this.containerW = this.container.offsetWidth;
+  this.containerH = this.container.offsetHeight;
+  this.findPos( this.container );
 };
 
 tts.MouseAndTouchTracker.prototype.dispose = function () {

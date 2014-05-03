@@ -277,3 +277,10 @@ MathUtil.getRotationDirectionToTarget = function( curAngle, targetAngle ) {
     return (angleDifference < 180) ? 1 : -1;
   }
 };
+
+
+MathUtil.circleRadiusToEnclosingSquareCorner = function( squareSize ) {
+  return (squareSize/2)*(Math.sqrt(2)-1);
+};
+
+
