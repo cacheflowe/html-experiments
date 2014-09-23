@@ -68,7 +68,8 @@ var _scaleV = 1;
 // create an new instance of a pixi stage
 var _pixiStage = new PIXI.Stage(0x92CA56);
 var _pixiRenderer = PIXI.autoDetectRenderer(_stageWidth, _stageHeight);
-document.getElementById('pixi-container').appendChild(_pixiRenderer.view);
+var _pixiContainer = document.getElementById('pixi-container');
+_pixiContainer.appendChild(_pixiRenderer.view);
 _pixiStage.interactive = false;
 
 // stage resize handling
@@ -160,7 +161,7 @@ document.body.addEventListener('pointerup', function(e){
 });
 document.body.addEventListener('pointermove', function(e){
   pointerEventsEl.innerHTML = '<b>pointermove</b><br/>'+'e.clientX: '+e.clientX+'<br/>'+'e.clientY: '+e.clientY;
-  pointerEventsEl.innerHTML += '<b>type</b><br/>'+'e.pointerType: '+e.pointerType;
+  pointerEventsEl.innerHTML += '<br/><b>e.pointerType</b>:'+' '+e.pointerType;
 });
 
 // IE pointer event check
@@ -298,3 +299,49 @@ setTimeout(function(){
     // alert('You don\'t seem to have an accelerometer, which is required for this demo.');
   }
 },1000);
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////
+// POINTER EVENTS //////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////
+var pointers = {};
+
+function onPointerDown(e) {
+  pointers[e.pointerId] = {
+    x: e.clientX,
+    y: e.clientY,
+    pointerType: e.pointerType,
+    pointerId: e.pointerId
+  };
+}
+
+function onPointerMove(e) {
+  var newPercentX = e.clientX / window.innerWidth;
+  _percentX.setTarget( newPercentX );
+
+  // Prevent the browser from doing its default thing (scroll, zoom)
+  var pointer = pointers[e.pointerId];
+  if (pointer) {
+    pointer.x = e.clientX;
+    pointer.y = e.clientY;
+
+    if(_usingAccelerometer == true) return;
+    var newPercentX = e.clientX / window.innerWidth;
+    _percentX.setTarget( newPercentX );
+  }
+} 
+
+function onPointerUp(e) { 
+  delete pointers[e.pointerId];
+}
+
+// -ms-touch-action: none; /* required to make pointer move event work */
+// touch-action: none; /* required to make pointer move event work */
+_pixiContainer.addEventListener( 'pointerdown', onPointerDown, false );
+_pixiContainer.addEventListener( 'pointermove', onPointerMove, false );
+_pixiContainer.addEventListener( 'pointerup', onPointerUp, false );
+_pixiContainer.addEventListener( 'pointercancel', onPointerUp, false );
+
+
