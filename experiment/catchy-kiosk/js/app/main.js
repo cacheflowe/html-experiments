@@ -50,6 +50,9 @@ var getScaledSpriteFromSVG = function(elemId) {
 var birdieSvg = getScaledSpriteFromSVG('birdie');
 var birdieSvgCatch = getScaledSpriteFromSVG('birdie-catch');
 
+var grass = getScaledSpriteFromSVG('grass');
+var mountain = getScaledSpriteFromSVG('mountain');
+
 ////////////////////////////////////////////////////////////////////////////////////////////
 // APP /////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -161,12 +164,12 @@ document.body.addEventListener('pointermove', function(e){
 });
 
 // IE pointer event check
-if(window.MSPointerDown || window.PointerDown) {
+// if(window.MSPointerDown || window.PointerDown) {
 
-}
-if(navigator.maxTouchPoints || navigator.msMaxTouchPoints) {
+// }
+// if(navigator.maxTouchPoints || navigator.msMaxTouchPoints) {
 
-}
+// }
 
 // window.addEventListener('mousemove', function(e){});
 
@@ -201,8 +204,12 @@ function onTextureUpdate() {
 // _pixiStage.addChild(character);
 //////////////////////////////////////////
 
+// add scene svgs
+_pixiStage.addChild(mountain);
+_pixiStage.addChild(grass);
 
-// add svg image from two.js re-scaling
+
+// add character svg
 var _playerCharacter = new PIXI.DisplayObjectContainer();
 _pixiStage.addChild(_playerCharacter);
 
@@ -213,11 +220,17 @@ birdieSvgCatch.visible = false;
 var lastCharacterX = _playerCharacter.position.x;
 var characterSpeed = 0;
 var startTime = Date.now();
-var updateBirdiePosition = function() {
+var updateCharacterPosition = function() {
   _playerCharacter.position.x = _percentX.value() * _stageWidth;
   characterSpeed = lastCharacterX - _playerCharacter.position.x;
   _playerCharacter.rotation = -characterSpeed / 100;
   lastCharacterX = _playerCharacter.position.x;
+
+  grass.position.y = _stageHeight - grass.height/2;
+  grass.position.x = (_stageWidth / 2) + 100 * (_percentX.value() - 0.5);
+
+  mountain.position.y = _stageHeight - mountain.height/2;
+  mountain.position.x = (_stageWidth / 2) + 40 * (_percentX.value() - 0.5);
 
   // sprite swap for now
   if(Date.now() > startTime + 500) {
@@ -235,7 +248,7 @@ var updateBirdiePosition = function() {
 
 var layoutScene = function() {
     // update character positions
-  _playerCharacter.position.y = _stageHeight - birdieSvg.height/2;
+  _playerCharacter.position.y = _stageHeight - birdieSvg.height/2 - grass.height * 0.3;
 }
 
 onWindowResize();
@@ -245,7 +258,7 @@ function animate() {
   requestAnimFrame( animate );
 
   _percentX.update();
-  updateBirdiePosition();
+  updateCharacterPosition();
 
   _pixiRenderer.render(_pixiStage);
 
