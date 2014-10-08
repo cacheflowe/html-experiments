@@ -39,8 +39,18 @@
 
   </head>
   <body onload = "init()">
+    <script src="js/vendor/jquery-1.11.0.min.js"></script>
     <script src="./js/vendor/pointerevents.js"></script>
     <script>
+      $(document).ready(function(){
+        $(document).keydown(function(event) {
+          if (event.ctrlKey==true && (event.which == '107' || event.which == '109')) {
+              // alert('disabling zooming ! ');
+              event.preventDefault();
+           }
+        });
+      });
+
 
       // shim layer with setTimeout fallback
       window.requestAnimFrame = (function(){
@@ -114,7 +124,6 @@
       }
 
       function onPointerMove(e) {
-        console.log('MOVINg');
         // Prevent the browser from doing its default thing (scroll, zoom)
         var pointer = pointers[e.pointerId];
         if (pointer) {
