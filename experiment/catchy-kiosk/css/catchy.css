@@ -2,24 +2,38 @@
    Author's custom styles
    ========================================================================== */
 * {
--webkit-touch-callout: none; /* prevent callout to copy image, etc when tap to hold */
--webkit-text-size-adjust: none; /* prevent webkit from resizing text to fit */
-/* make transparent link selection, adjust last value opacity 0 to 1.0 */
--webkit-tap-highlight-color: rgba(0,0,0,0); 
--webkit-user-select: none; /* prevent copy paste, to allow, change 'none' to 'text' */
--webkit-tap-highlight-color: rgba(0,0,0,0); 
+    -webkit-touch-callout: none; /* prevent callout to copy image, etc when tap to hold */
+    -webkit-text-size-adjust: none; /* prevent webkit from resizing text to fit */
+    /* make transparent link selection, adjust last value opacity 0 to 1.0 */
+    -webkit-tap-highlight-color: rgba(0,0,0,0); 
+    -webkit-user-select: none; /* prevent copy paste, to allow, change 'none' to 'text' */
+    -webkit-tap-highlight-color: rgba(0,0,0,0); 
 }
 
+* {
+    -ms-touch-action: none;
+    -ms-content-zooming: none;
+    touch-action: none; /* required to make pointer move event work */
+}
+
+body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
 
 
 #svg-lib {
     display: none;
 }
 
-#pixi-container {
+#game-container {
     background-color: #E2E654;
     display:block; 
     position:absolute; 
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
     -ms-touch-action: none; /* required to make pointer move event work */
     touch-action: none; /* required to make pointer move event work */
 }
@@ -37,96 +51,28 @@
 }
 
 
+/* ==========================================================================
+   Game objects
+   ========================================================================== */
+
+.sprite {
+    position: absolute;
+    width: 0;
+    height: 0;
+}
+
+.sprite img {
+    transform: translate3d(-50%,-50%,0);
+}
+
+.hidden {
+    display: none;
+}
 
 
 /* ==========================================================================
    Media Queries
    ========================================================================== */
 
-@media only screen and (min-width: 480px) {
-
-/* ====================
-    INTERMEDIATE: Menu
-   ==================== */
-
-    nav a {
-        float: left;
-        width: 27%;
-        margin: 0 1.7%;
-        padding: 25px 2%;
-        margin-bottom: 0;
-    }
-
-    nav li:first-child a {
-        margin-left: 0;
-    }
-
-    nav li:last-child a {
-        margin-right: 0;
-    }
-
-/* ========================
-    INTERMEDIATE: IE Fixes
-   ======================== */
-
-    nav ul li {
-        display: inline;
-    }
-
-    .oldie nav a {
-        margin: 0 0.7%;
-    }
-}
-
 @media only screen and (min-width: 768px) {
-
-/* ====================
-    WIDE: CSS3 Effects
-   ==================== */
-
-    .header-container,
-    .main aside {
-        -webkit-box-shadow: 0 5px 10px #aaa;
-           -moz-box-shadow: 0 5px 10px #aaa;
-                box-shadow: 0 5px 10px #aaa;
-    }
-
-/* ============
-    WIDE: Menu
-   ============ */
-
-    .title {
-        float: left;
-    }
-
-    nav {
-        float: right;
-        width: 38%;
-    }
-
-/* ============
-    WIDE: Main
-   ============ */
-
-    .main article {
-        float: left;
-        width: 57%;
-    }
-
-    .main aside {
-        float: right;
-        width: 28%;
-    }
-}
-
-@media only screen and (min-width: 1140px) {
-
-/* ===============
-    Maximal Width
-   =============== */
-
-    .wrapper {
-        width: 1026px; /* 1140px - 10% for margins */
-        margin: 0 auto;
-    }
 }
