@@ -11,3 +11,15 @@ _catchy.debug.init = function() {
 
   document.body.appendChild(window.stats.domElement);
 };
+
+// TODO: remove this before launch
+var alertErrors = (function() {
+  if( !window.addEventListener ) return;
+  window.addEventListener('error',function(e){
+    var fileComponents = e.filename.split('/');
+    var file = fileComponents[fileComponents.length-1];
+    var line = e.lineno;
+    var message = e.message;
+    alert('ERROR\n'+'Line '+line+' in '+file+'\n'+message);
+  });
+})();
