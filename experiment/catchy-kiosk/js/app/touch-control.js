@@ -34,14 +34,32 @@ _catchy.touchControl.init = function(){
     delete pointers[e.pointerId];
   }
 
+  function onMouseDown(e) { 
+    alert('mouse down');
+  }
+
+  function onMouseMove(e) { 
+    alert('mouse move');
+  }
+
+  function onMouseUp(e) { 
+    alert('mouse up');
+  }
+
   // -ms-touch-action: none; /* required to make pointer move event work */
   // touch-action: none; /* required to make pointer move event work */
   // _catchy.screen.container.addEventListener( 'touchmove', function(e){
   //   _catchy.touchControl.percentX.setTarget( e.touches[0].clientX / _catchy.screen.width );
   // }, false );
-  _catchy.screen.container.addEventListener( 'pointerdown', onPointerDown, false );
-  _catchy.screen.container.addEventListener( 'pointermove', onPointerMove, false );
-  _catchy.screen.container.addEventListener( 'pointerup', onPointerUp, false );
-  _catchy.screen.container.addEventListener( 'pointercancel', onPointerUp, false );
+  console.log(_catchy.screen.container);
+  // _catchy.screen.container.addEventListener( 'pointerdown', onPointerDown, false );
+  // _catchy.screen.container.addEventListener( 'pointermove', onPointerMove, false );
+  // _catchy.screen.container.addEventListener( 'pointerup', onPointerUp, false );
+  // _catchy.screen.container.addEventListener( 'pointercancel', onPointerUp, false );
+
+  _catchy.screen.container.addEventListener( 'mousedown', onMouseDown, false );
+  _catchy.screen.container.addEventListener( 'mousemove', onMouseMove, false );
+  _catchy.screen.container.addEventListener( 'mouseup', onMouseUp, false );
+
 };
 
