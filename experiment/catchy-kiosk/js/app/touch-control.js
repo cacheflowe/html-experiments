@@ -1,4 +1,3 @@
-alert('Hello World');
 _catchy.touchControl = {};
 _catchy.touchControl.init = function(){
 
