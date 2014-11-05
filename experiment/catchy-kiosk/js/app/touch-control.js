@@ -36,9 +36,9 @@ _catchy.touchControl.init = function(){
 
   // -ms-touch-action: none; /* required to make pointer move event work */
   // touch-action: none; /* required to make pointer move event work */
-  _catchy.screen.container.addEventListener( 'touchmove', function(e){
-    _catchy.touchControl.percentX.setTarget( e.touches[0].clientX / _catchy.screen.width );
-  }, false );
+  // _catchy.screen.container.addEventListener( 'touchmove', function(e){
+  //   _catchy.touchControl.percentX.setTarget( e.touches[0].clientX / _catchy.screen.width );
+  // }, false );
   _catchy.screen.container.addEventListener( 'pointerdown', onPointerDown, false );
   _catchy.screen.container.addEventListener( 'pointermove', onPointerMove, false );
   _catchy.screen.container.addEventListener( 'pointerup', onPointerUp, false );
