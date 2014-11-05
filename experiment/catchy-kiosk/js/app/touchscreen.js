@@ -2,16 +2,16 @@
 _catchy.screen = {};
 
 _catchy.screen.init = function() {
-  MobileUtil.lockTouchScreen(true);
-  _catchy.screen.windowsTouchscreenZoomDisable();
+  // MobileUtil.lockTouchScreen(true);
+  // _catchy.screen.windowsTouchscreenZoomDisable();
 
   _catchy.screen.width = window.innerWidth;
   _catchy.screen.height = window.innerHeight;
   _catchy.screen.scaleV = _catchy.screen.height / 680;
   _catchy.screen.container = document.getElementById('game-container');
 
-  _catchy.screen.recurseDisableElements(_catchy.screen.container);
-  _catchy.screen.disableRightClick(_catchy.screen.container);
+  // _catchy.screen.recurseDisableElements(_catchy.screen.container);
+  // _catchy.screen.disableRightClick(_catchy.screen.container);
 
   window.addEventListener('resize', _catchy.screen.onResize);
   _catchy.screen.onResize();
