@@ -5,6 +5,7 @@ _catchy.touchControl.init = function(){
   var pointers = {};
 
   function onPointerDown(e) {
+    alert('pointer down');
     pointers[e.pointerId] = {
       x: e.clientX,
       y: e.clientY,
@@ -14,6 +15,7 @@ _catchy.touchControl.init = function(){
   }
 
   function onPointerMove(e) {
+    alert('pointer move');
     var newPercentX = e.clientX / _catchy.screen.width;
     _catchy.touchControl.percentX.setTarget( newPercentX );
 
@@ -28,6 +30,7 @@ _catchy.touchControl.init = function(){
   } 
 
   function onPointerUp(e) { 
+    alert('pointer up');
     delete pointers[e.pointerId];
   }
 
