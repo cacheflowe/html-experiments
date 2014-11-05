@@ -82,7 +82,7 @@ _catchy.touchControl.init = function(){
         // MobileUtil.lockTouchScreen(false);
         break;
     }
-  }, false, '', false );
+  }, true, '', false );
 
 };
 
