@@ -1,3 +1,4 @@
+alert('ello world');
 _catchy.touchControl = {};
 _catchy.touchControl.init = function(){
   _catchy.touchControl.percentX = new EasingFloat(0.5, 10, 0.001);
