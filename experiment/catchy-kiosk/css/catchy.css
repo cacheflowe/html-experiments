@@ -11,9 +11,9 @@
 }
 
 * {
-    -ms-touch-action: none;
+    /*-ms-touch-action: none;*/
     -ms-content-zooming: none;
-    touch-action: none; /* required to make pointer move event work */
+    /*touch-action: none;  required to make pointer move event work */
 }
 
 body {
@@ -34,8 +34,8 @@ body {
     width: 100%;
     height: 100%;
     overflow: hidden;
-    -ms-touch-action: none; /* required to make pointer move event work */
-    touch-action: none; /* required to make pointer move event work */
+    /*-ms-touch-action: none;  required to make pointer move event work */
+    /*touch-action: none;  required to make pointer move event work */
 }
 
 #debug {

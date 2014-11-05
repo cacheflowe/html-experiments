@@ -17,7 +17,9 @@ _catchy.SpriteBuilder = function() {
 
     // import svg from DOM, scale up, fit canvas to svg and render!
     var shape = _twoCanvas.interpret(document.getElementById(elemId));
-    shape.scale = scale;
+    var retinaScale = 1;
+    if(window.devicePixelRatio > 1) retinaScale = window.devicePixelRatio;
+    shape.scale = scale / retinaScale;
     var charH = Math.ceil(shape.getBoundingClientRect().height);
     var charW = Math.ceil(shape.getBoundingClientRect().width);
     _twoCanvas.width = charW;
