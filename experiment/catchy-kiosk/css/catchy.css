@@ -28,7 +28,7 @@ body {
 }
 
 #game-container {
-    background-color: #E2E654;
+    background-color: #5EB9CE;
     display:block; 
     position:absolute; 
     width: 100%;
@@ -61,8 +61,10 @@ body {
     height: 0;
 }
 
-.sprite img {
+.sprite img,
+.sprite svg {
     transform: translate3d(-50%,-50%,0);
+    transform-origin: 50% 50%;
 }
 
 .hidden {

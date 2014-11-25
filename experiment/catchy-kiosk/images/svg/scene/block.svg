@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 15.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 width="70.851px" height="75.385px" viewBox="0 0 70.851 75.385" enable-background="new 0 0 70.851 75.385" xml:space="preserve">
+<rect x="0.713" y="6.833" fill="#E58225" width="68.552" height="68.552"/>
+<g>
+	<g>
+		<defs>
+			<rect id="SVGID_1_" x="5.811" y="11.932" width="58.354" height="58.354"/>
+		</defs>
+		<clipPath id="SVGID_2_">
+			<use xlink:href="#SVGID_1_"  overflow="visible"/>
+		</clipPath>
+		<rect x="5.811" y="11.932" clip-path="url(#SVGID_2_)" fill="#E58225" width="58.354" height="58.354"/>
+	</g>
+</g>
+<g>
+	<g>
+		<defs>
+			<rect id="SVGID_3_" x="5.811" y="11.932" width="58.354" height="58.354"/>
+		</defs>
+		<clipPath id="SVGID_4_">
+			<use xlink:href="#SVGID_3_"  overflow="visible"/>
+		</clipPath>
+		<polygon clip-path="url(#SVGID_4_)" fill="#E58225" points="64.165,70.286 5.811,70.286 64.165,11.931 		"/>
+	</g>
+</g>
+<g opacity="0.1">
+	<g>
+		<defs>
+			<rect id="SVGID_5_" x="0.686" y="7.311" width="68.505" height="8.154"/>
+		</defs>
+		<clipPath id="SVGID_6_">
+			<use xlink:href="#SVGID_5_"  overflow="visible"/>
+		</clipPath>
+		<rect x="0.687" y="7.311" clip-path="url(#SVGID_6_)" width="68.504" height="8.154"/>
+	</g>
+</g>
+<path fill="#A3CF69" d="M64.517,0c-2.188,0-4.114,1.112-5.252,2.8h-1.017C57.11,1.112,55.185,0,52.995,0
+	c-0.023,0-0.047,0.004-0.072,0.005C52.899,0.004,52.876,0,52.851,0c-2.188,0-4.113,1.112-5.252,2.8h-1.017
+	C45.444,1.112,43.519,0,41.33,0c-0.024,0-0.048,0.004-0.071,0.005C41.233,0.004,41.21,0,41.187,0c-2.189,0-4.115,1.112-5.252,2.8
+	h-1.019C33.779,1.112,31.853,0,29.664,0c-0.024,0-0.047,0.004-0.071,0.005C29.568,0.004,29.545,0,29.521,0
+	c-2.188,0-4.114,1.112-5.252,2.8h-1.017C22.113,1.112,20.187,0,17.999,0c-0.025,0-0.048,0.004-0.072,0.005
+	C17.902,0.004,17.879,0,17.855,0c-2.189,0-4.115,1.112-5.252,2.8h-1.018C10.448,1.112,8.522,0,6.333,0C2.835,0,0,2.836,0,6.333
+	c0,0.333,0.036,0.656,0.087,0.975h70.676c0.051-0.318,0.088-0.642,0.088-0.975C70.851,2.836,68.015,0,64.517,0"/>
+</svg>
