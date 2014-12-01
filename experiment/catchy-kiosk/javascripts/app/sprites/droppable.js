@@ -1,8 +1,12 @@
 _catchy.Droppable = function(sprite, isGood) {
 
   var _sprite = sprite,
+      _spriteShadow,
       _x,
       _y,
+      _height,
+      _shadowY,
+      _missedY,
       _scale,
       _baseScale,
       _speed,
@@ -15,45 +19,67 @@ _catchy.Droppable = function(sprite, isGood) {
     _scale = new EasingFloat(1, 5, 0.001);
     _speed = 5 * _catchy.screen.scaleV;
     _isGood = isGood;
+    _spriteShadow = _catchy.spriteBuilder.getScaledSvgFromSvg(_catchy.screen.container, 'shadow', _catchy.screen.scaleV * _baseScale, getDimensions);
+    _shadowY = _catchy.screen.height - (44 * _catchy.screen.scaleV);
+    _missedY = _catchy.screen.height - (88 * _catchy.screen.scaleV);
     if(_sprite.height > 0) getDimensions();
   };
 
   var getDimensions = function() {
+    if(_sprite.height != 0) _height = _sprite.height;
     _x = _catchy.screen.width / 2;
     _y = _catchy.screen.height - _sprite.height / 2;
     reset();
+    _spriteShadow.setScale(_scale.value());
     update(0,0);
   };
 
   var reset = function() {
     _x = _catchy.screen.width * Math.random();
-    _y = -_sprite.height;
-    _sprite.setPosition(_x, _y);
-    _sprite.setRotation(MathUtil.randRangeDecimel(-20, 20));
+    _y = -_height;
     _scale.setTarget(_baseScale);
-    _scale.setValue(_baseScale);
+    _scale.setValue(0.01);
+
+    _sprite.setRotation(MathUtil.randRangeDecimel(-20, 20));
+    _sprite.setScale(0.01);
+    _sprite.setPosition(_x, _y);
+    _sprite.hide();
+
+    _spriteShadow.hide();
+    _spriteShadow.setPosition(_x, _y);
+
     _active = false;
     _isCaught = false;
   };
 
-  var launch = function(xPos) {
+  var launch = function(xPos, yPos) {
     _x = xPos;
-    _y = -_sprite.height / 2;
+    _y = yPos - (_height / 2);
     _active = true;
+    _spriteShadow.show();
+    _scale.setValue(0.01);
+    _sprite.setScale(_scale.value());
+    _sprite.show();
   };
 
-  var update = function(playerX, playerY) {
+  var update = function() {
     if(_active == false) return;
     _scale.update();
+    // update droppable
     _y += _speed;
-    _sprite.setPosition(_x, _y);
     _sprite.setScale(_scale.value());
-    if(_y > _catchy.screen.height + _sprite.height * 2) {
+    _sprite.setPosition(_x, _y);
+    if(_y > _catchy.screen.height + _height * 2) {
       reset();
     }
+    // shrink down if not caught
+    if(_y > _missedY) _scale.setTarget(0);
     if(_scale.value() < 0.05) {
       reset();
     }
+    // update shadow
+    _spriteShadow.setScale(_scale.value());
+    _spriteShadow.setPosition(_x, _shadowY);
   };
 
   var updateCaughtPosition = function(catchX, catchY) {
@@ -68,7 +94,7 @@ _catchy.Droppable = function(sprite, isGood) {
   };
 
   init();
-  return {
+  var _interface = {
     update : update,
     x : function(){ return _x; },
     y : function(){ return _y; },
@@ -80,4 +106,5 @@ _catchy.Droppable = function(sprite, isGood) {
     caught: caught,
     updateCaughtPosition: updateCaughtPosition
   };
+  return _interface;
 };

@@ -4,7 +4,7 @@ $(document).ready(function(){
   _catchy.screen.init();
   _catchy.touchControl.init();
   _catchy.spriteBuilder = new _catchy.SpriteBuilder();
-  _catchy.game = new _catchy.CatchyGame();
+  _catchy.gameplay = new _catchy.CatchyGameplay();
   _catchy.screen.onResize();
 
   // clean up svg source

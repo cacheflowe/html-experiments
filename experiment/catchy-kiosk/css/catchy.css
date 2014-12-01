@@ -1,6 +1,28 @@
 /* ==========================================================================
    Author's custom styles
    ========================================================================== */
+
+@font-face {
+  font-family: 'alegreya_sansbold';
+  src: url('../fonts/alegreyasans-bold.woff') format('woff'), /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+       url('../fonts/alegreyasans-bold.ttf') format('truetype'); /* Chrome 4+, Firefox 3.5, Opera 10+, Safari 3—5 */
+  font-weight: normal;
+  font-style: normal;
+}
+
+/*@font-face {
+    font-family: 'alegreya_sansbold';
+    src: url('alegreyasans-bold.eot');
+    src: url('alegreyasans-bold.eot?#iefix') format('embedded-opentype'),
+         url('alegreyasans-bold.woff2') format('woff2'),
+         url('alegreyasans-bold.woff') format('woff'),
+         url('alegreyasans-bold.ttf') format('truetype'),
+         url('alegreyasans-bold.svg#alegreya_sansbold') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}*/
+
+
 * {
     -webkit-touch-callout: none; /* prevent callout to copy image, etc when tap to hold */
     -webkit-text-size-adjust: none; /* prevent webkit from resizing text to fit */
@@ -21,7 +43,6 @@ body {
     height: 100%;
     overflow: hidden;
 }
-
 
 #svg-lib {
     display: none;
@@ -66,6 +87,20 @@ body {
     transform: translate3d(-50%,-50%,0);
     transform-origin: 50% 50%;
 }
+
+.sprite.sprite-text {
+  text-align: center;
+  width: 200px;
+  margin-left: -100px;
+  font-family: 'alegreya_sansbold', sans-serif;
+}
+
+#score-color-bg.cherry-chub { fill: #AD2135; }
+#score-color-bg.mama-mouth { fill: #118BC5; }
+#score-color-bg.broomschnauser { fill: #8DA52D; }
+#score-color-bg.roberto { fill: #9EBAC7; }
+#score-color-bg.lil-missy { fill: #ED7DAE; }
+#score-color-bg.birdie { fill: #FED40A; }
 
 .hidden {
     display: none;

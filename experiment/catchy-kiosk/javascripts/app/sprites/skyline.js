@@ -18,8 +18,8 @@ _catchy.Skyline = function() {
 
   var update = function(xPercent) {
     _x = _catchy.screen.width/3 * 2 + (-0.5 + _catchy.touchControl.percentX.value()) * (_catchy.screen.width * 0.04);
-    _sprite.setPosition(_x, _y);
     _sprite.setScale(_scale);
+    _sprite.setPosition(_x, _y);
   };
 
   init();

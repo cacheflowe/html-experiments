@@ -32,7 +32,7 @@ _catchy.SpriteBuilder = function() {
     img = document.createElement('img');
     img.src = _twoCanvas.renderer.domElement.toDataURL();
     div.appendChild(img);
-    return new _catchy.Sprite(div, img, null, loadedCallback);
+    return new _catchy.Sprite(div, img, null, null, loadedCallback);
   };
 
   var getScaledSvgFromSvg = function(container, elemId, scale, loadedCallback) {
@@ -43,8 +43,23 @@ _catchy.SpriteBuilder = function() {
     div = newSpriteContainer(container);
     div.appendChild(newSvg);
 
-    var newSprite = new _catchy.Sprite(div, null, newSvg, loadedCallback);
+    var newSprite = new _catchy.Sprite(div, null, newSvg, null, loadedCallback);
     newSprite.setScale(scale);
+
+    return newSprite;
+  };
+
+
+  var getTextField = function(container, scale, initialText) {
+    div = newSpriteContainer(container);
+
+    divText = newSpriteContainer(div);
+    divText.classList.add('sprite-text');
+
+    var newSprite = new _catchy.Sprite(div, null, null, divText);
+    newSprite.setScale(scale);
+    newSprite.setText(initialText);
+
     return newSprite;
   };
 
@@ -60,7 +75,8 @@ _catchy.SpriteBuilder = function() {
   return {
     getScaledImageFromSVG: getScaledImageFromSVG,
     getScaledSvgFromSvg: getScaledSvgFromSvg,
-    newSpriteContainer: newSpriteContainer
+    newSpriteContainer: newSpriteContainer,
+    getTextField: getTextField
   };
 };
 

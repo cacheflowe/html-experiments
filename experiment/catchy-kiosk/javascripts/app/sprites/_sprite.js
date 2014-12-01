@@ -1,4 +1,4 @@
-_catchy.Sprite = function(divEl, imgEl, svgEl, textEl, loadedCallback) {
+_catchy.Sprite = function(divEl, imgEl, svgEl, text, loadedCallback) {
 
   var _x = 0,
       _y = 0,
@@ -6,7 +6,6 @@ _catchy.Sprite = function(divEl, imgEl, svgEl, textEl, loadedCallback) {
       _scale = 1,
       _el = divEl || _catchy.spriteBuilder.newSpriteContainer(),
       _img = imgEl,
-      _textEl = textEl,
       _svg = svgEl;
 
   var init = function() {
@@ -21,17 +20,16 @@ _catchy.Sprite = function(divEl, imgEl, svgEl, textEl, loadedCallback) {
     }
     if(_svg != null) {
       setTimeout(function(){
-        getSvgDimensions();
+        _interface.width = _svg.offsetWidth;
+        _interface.height = _svg.offsetHeight;
+        // _el.setAttribute("width", parseFloat(_svg.offsetWidth));
+        // _el.setAttribute("height", parseFloat(_svg.offsetHeight));
         if(loadedCallback != null) loadedCallback();
       }, 1);
     }
-  };
-
-  var getSvgDimensions = function() {
-    _interface.width = _svg.offsetWidth;
-    _interface.height = _svg.offsetHeight;
-    // _el.setAttribute("width", parseFloat(_svg.offsetWidth));
-    // _el.setAttribute("height", parseFloat(_svg.offsetHeight));
+    if(text != null) {
+      _el.innerHTML = text;
+    }
   };
 
   var setRotation = function(rot) {
@@ -41,8 +39,8 @@ _catchy.Sprite = function(divEl, imgEl, svgEl, textEl, loadedCallback) {
   var setScale = function(scale) {
     _scale = scale;
     if(_svg != null) {
-      _interface.width = _svg.offsetWidth;
-      _interface.height = _svg.offsetHeight;
+      if(_svg.offsetWidth != 0) _interface.width = _svg.offsetWidth;
+      if(_svg.offsetHeight != 0) _interface.height = _svg.offsetHeight;
     }
   };
 
@@ -51,22 +49,13 @@ _catchy.Sprite = function(divEl, imgEl, svgEl, textEl, loadedCallback) {
     _y = y;
     _catchy.cssHelper.update2DPosition(_el, _x, _y, _scale, _rot, false);
   };
-
+  
   var setText = function(text) {
-    _textEl.innerHTML = text;
+    _el.innerHTML = text;
   };
 
   var setTextFontSize = function(size) {
-    _textEl.style.fontSize = size;
-  };
-
-  var setTextWidth = function(width) {
-    _textEl.style.width = width + 'px';
-    _textEl.style.marginLeft = (width/-2) + 'px';
-  };
-
-  var setTextColor = function(color) {
-    _textEl.style.color = color;
+    _el.setAttribute('font-size', size);
   };
 
   var hide = function() {
@@ -87,14 +76,11 @@ _catchy.Sprite = function(divEl, imgEl, svgEl, textEl, loadedCallback) {
     setPosition : setPosition,
     setRotation : setRotation,
     setScale : setScale,
-    setText : setText,
-    setTextFontSize : setTextFontSize,
-    setTextWidth : setTextWidth,
-    setTextColor : setTextColor,
-    getSvgDimensions : getSvgDimensions,
     hide : hide,
     show : show,
     isShowing : isShowing,
+    setText : setText,
+    setText: setText,
     width: (_img != null) ? _img.width : 0,
     height: (_img != null) ? _img.height : 0
   };
