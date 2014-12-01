@@ -6,12 +6,12 @@ _catchy.Bush = function() {
       _scale;
 
   var init = function() {
+    _scale = 0.42 * _catchy.screen.scaleV;
     _sprite = _catchy.spriteBuilder.getScaledSvgFromSvg(_catchy.screen.container, 'bush', _catchy.screen.scaleV, getDimensions);
     if(_sprite.height > 0) getDimensions();
   };
 
   var getDimensions = function() {
-    _scale = 0.42 * _catchy.screen.scaleV;
     _x = _catchy.screen.width / 2;
     _y = _catchy.screen.height - (_sprite.height * _scale) / 2 - (_catchy.screen.scaleV * 75);
   };
