@@ -13,11 +13,11 @@ _catchy.Bush = function() {
 
   var getDimensions = function() {
     _x = _catchy.screen.width / 2;
-    _y = _catchy.screen.height - (_sprite.height * _scale) / 2 - (_catchy.screen.scaleV * 75);
+    _y = _catchy.screen.height - (_sprite.height * _scale) / 2 - (_catchy.screen.scaleV * 85);
   };
 
   var update = function(xPercent) {
-    _x = _catchy.screen.width - _catchy.screen.width/4 + (-0.5 + _catchy.touchControl.percentX.value()) * (_catchy.screen.width * 0.085);
+    _x = _catchy.screen.width - _catchy.screen.width/4 + (-0.5 + _catchy.touchControl.percentX.value()) * (_catchy.screen.width * 0.055);
     _sprite.setScale(_scale);
     _sprite.setPosition(_x, _y);
   };

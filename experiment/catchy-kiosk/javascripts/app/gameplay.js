@@ -74,9 +74,11 @@ _catchy.CatchyGameplay = function() {
       _catchy.touchControl.percentX.update();
 
       _player.update();
-      _mountain.update();
-      _skyline.update();
-      _building.update();
+      if(_frameCount < 10) {
+        _mountain.update();
+        _skyline.update();
+        _building.update();
+      }
       _bush.update();
       _grass.update();
       _droppables.update(_timer.isActive());
