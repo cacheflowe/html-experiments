@@ -42,9 +42,9 @@ _catchy.Score = function() {
 
   var setColor = function(colorHex, characterId) {
     _spriteText.setTextColor(colorHex);
-    _spriteBgFill.classList.remove(_charId);
+    if(_spriteBgFill != null && _spriteBgFill.classList != null) _spriteBgFill.classList.remove(_charId);
     _charId = characterId;
-    _spriteBgFill.classList.add(_charId);
+    if(_spriteBgFill != null && _spriteBgFill.classList != null) _spriteBgFill.classList.add(_charId);
   };
 
   init();

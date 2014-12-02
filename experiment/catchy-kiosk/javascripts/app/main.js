@@ -9,6 +9,8 @@ $(document).ready(function(){
 
   // clean up svg source
   var svgLib = document.getElementById('svg-lib');
-  // svgLib.parentNode.removeChild(svgLib);
+  setTimeout(function(){
+    svgLib.parentNode.removeChild(svgLib);
+  },10);
 
 });

@@ -39,11 +39,14 @@ _catchy.SpriteBuilder = function() {
     var srcSvg = document.getElementById(elemId);
     var newSvg = srcSvg.cloneNode(true);
     newSvg.innerHTML = srcSvg.innerHTML;
+    var width = srcSvg.getBoundingClientRect().width;
+    var height = srcSvg.getBoundingClientRect().height;
 
     div = newSpriteContainer(container);
     div.appendChild(newSvg);
 
     var newSprite = new _catchy.Sprite(div, null, newSvg, null, loadedCallback);
+    newSprite.setOriginalSize(width, height);
     newSprite.setScale(scale);
 
     return newSprite;

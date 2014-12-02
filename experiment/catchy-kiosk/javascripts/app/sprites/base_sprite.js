@@ -26,10 +26,17 @@ _catchy.Sprite = function(divEl, imgEl, svgEl, textEl, loadedCallback) {
       }, 1);
     }
   };
+  
+  var setOriginalSize = function(width, height) {
+    _interface.width = width;
+    _interface.height = height;
+    // console.log(_svg.id, width, height);
+  };
 
   var getSvgDimensions = function() {
-    _interface.width = _svg.offsetWidth;
-    _interface.height = _svg.offsetHeight;
+    // console.log(srcSvg, srcSvg.getBoundingClientRect().width, srcSvg.getBoundingClientRect().width);
+    // _interface.width = _svg.getBoundingClientRect().width;
+    // _interface.height = _svg.getBoundingClientRect().height;
     // _el.setAttribute("width", parseFloat(_svg.offsetWidth));
     // _el.setAttribute("height", parseFloat(_svg.offsetHeight));
   };
@@ -41,8 +48,8 @@ _catchy.Sprite = function(divEl, imgEl, svgEl, textEl, loadedCallback) {
   var setScale = function(scale) {
     _scale = scale;
     if(_svg != null) {
-      _interface.width = _svg.offsetWidth;
-      _interface.height = _svg.offsetHeight;
+    // _interface.width = _svg.getBoundingClientRect().width;
+    // _interface.height = _svg.getBoundingClientRect().height;
     }
   };
 
@@ -84,6 +91,7 @@ _catchy.Sprite = function(divEl, imgEl, svgEl, textEl, loadedCallback) {
   init();
   var _interface = {
     el: _el,
+    setOriginalSize : setOriginalSize,
     setPosition : setPosition,
     setRotation : setRotation,
     setScale : setScale,

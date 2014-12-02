@@ -45,7 +45,7 @@ body {
 }
 
 #svg-lib {
-    display: none;
+    /* display: none; */
 }
 
 #game-container {
@@ -80,6 +80,8 @@ body {
     position: absolute;
     width: 0;
     height: 0;
+    left: 0;
+    top: 0;
 }
 
 .sprite img,
