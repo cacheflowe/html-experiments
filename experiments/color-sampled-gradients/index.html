@@ -1,0 +1,165 @@
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+  <title>Color-Sampled Gradients</title>
+  <link rel="stylesheet" href="../../stylesheets/style-52-check-buttons.css"/>
+  <style>
+    * {
+      margin: 0px;
+      padding: 0px;
+      box-sizing: border-box;
+    }
+    body, html {
+      width: 100%;
+      height: 100%;
+      background-color: black;
+      color: #666;
+      text-align: center;
+    }
+    canvas {
+      display: inline-block;
+      margin-top: 100px;
+      max-width: 100%;
+    }
+    p {
+      margin: 40px;
+      font-family: Helvetica, Arial, sans-serif;
+    }
+    .draw-container {
+      padding: 10px;
+    }
+    .container > .button-52 {
+      margin: 0 12px 24px;
+    }
+    @media only screen and (max-width: 600px) {
+      .container {
+        width: 290px;
+      }
+    }
+  </style>
+  <script type="text/javascript" src="../../javascripts/modeset/math_util.js"></script>
+  <script type="text/javascript" src="../../javascripts/modeset/canvas_util.js"></script>
+  <script type="text/javascript" src="../../javascripts/modeset/image_util.js"></script>
+</head>
+
+<body>
+  <div class="draw-container">
+    <canvas id="draw" width="1200" height="400"></canvas>
+  </div>
+  <div class="container">
+    <a id="upload" href="#upload" class="button-52">Upload<input type="file" id="file-input" size="10" multiple="false" /></a>
+    <a id="reload" href="#reload" class="button-52">Redraw</a>
+    <a id="saveimg" href="#" class="button-52">Save</a>
+    <span class="button-52-label">Fade</span> 
+    <a id="easecolors" href="#fade" class="button-52 button-52-check">Fade</a>
+  </div>
+  <script>
+
+    var _canvas = document.getElementById("draw"),
+        _context = _canvas.getContext("2d"),
+        _cropOffset,
+        _width = 400,
+        _height = 400,
+        _drawX = _width,
+        _widthMax,
+        _loadedImg,
+        _colorEasing = false;
+    
+    var loadImageToContext = function(canvasCtx, image){
+      _loadedImg = image;
+      _widthMax = _canvas.width;
+      _drawX = _width;
+      _cropOffset = ImageUtil.getOffsetAndSizeToCrop(_width, _height, _loadedImg.width, _loadedImg.height, true);
+      _context.clearRect(0, 0, _widthMax, _height);
+      _context.drawImage(_loadedImg, _cropOffset[0], _cropOffset[1], _cropOffset[2], _cropOffset[3]);
+      animate();
+    };
+
+    var ColorCrawler = function() {
+      var rads = MathUtil.randRangeDecimel(0, Math.PI*2);
+      var radius = MathUtil.randRange(_width/20, _width/2.5);
+      var speed = MathUtil.randRangeDecimel(0.002, 0.010);
+      var _x;
+      var _y;
+      var _rgb;
+
+      // move in a circle from the center of the image, and return the current fill style from the current pixel color
+      var update = function() {
+        rads += speed;
+        _x = Math.round(_width/2 + radius * Math.sin(rads));
+        _y = Math.round(_height/2 + radius * Math.cos(rads));
+
+        return CanvasUtil.pixelColorToCanvasColor(_context, _x, _y);
+      };
+      var updateEased = function() {
+        update();
+        var rgbArray = CanvasUtil.getPixelColorFromContext(_context, _x, _y);
+        if(_rgb == null) _rgb = rgbArray;
+        var easeFactor = 10;
+        _rgb[0] = Math.round(MathUtil.easeTo(_rgb[0], rgbArray[0], easeFactor));
+        _rgb[1] = Math.round(MathUtil.easeTo(_rgb[1], rgbArray[1], easeFactor));
+        _rgb[2] = Math.round(MathUtil.easeTo(_rgb[2], rgbArray[2], easeFactor));
+        return CanvasUtil.rgbToCanvasColor( _rgb[0], _rgb[1], _rgb[2], 1 );
+      };
+      return {
+        update: update,
+        updateEased: updateEased
+      };
+    };
+
+    var crawler1 = new ColorCrawler(),
+        crawler2 = new ColorCrawler();
+
+    var animate = function() {
+      if(_drawX < _widthMax) requestAnimationFrame(animate);
+
+      // redraw image
+      // _context.drawImage(_loadedImg, _cropOffset[0], _cropOffset[1], _cropOffset[2], _cropOffset[3]);
+
+      // create 1px-wide gradient each frame
+      var gradient = _context.createLinearGradient(_drawX, 0, _drawX + 1, _height);
+      gradient.addColorStop(0, (_colorEasing) ? crawler1.updateEased() : crawler1.update());   
+      gradient.addColorStop(1, (_colorEasing) ? crawler2.updateEased() : crawler2.update()); 
+      _context.fillStyle = gradient;
+      _context.fillRect(_drawX, 0, 1, _height);
+      _drawX++;
+    };
+
+    // load images to canvas ------------------------------------------------------------------------
+    // load and draw image
+    CanvasUtil.loadImageToContext("../../media/images/ello-shirt-upso.jpg", loadImageToContext);
+    // drag/drop image
+    CanvasUtil.loadImageToContextFromDrop( _canvas, function( apiFiles ){
+      CanvasUtil.imagesSelected( apiFiles, loadImageToContext );
+    });
+    // load image from file button
+    var _fileInput = document.getElementById('file-input');
+    CanvasUtil.loadImageToContextFromInput( _fileInput, function( apiFiles ){
+      CanvasUtil.imagesSelected( apiFiles, loadImageToContext );
+    });
+
+
+    // button interactions --------------------------------------------------------------------------
+    // reload the original
+    var reloadButton = document.getElementById('reload');
+    reloadButton.addEventListener('click', function(e){
+      e.preventDefault();
+      cancelAnimationFrame(animate);
+      loadImageToContext(_context, _loadedImg);
+    });
+    // save canvas image on click
+    var saveButton = document.getElementById('saveimg');
+    saveButton.addEventListener('click', function(e){
+      e.preventDefault();
+      CanvasUtil.saveCanvas( _context );
+    });
+    // interpolate/ease colors toggle
+    var fadeButton = document.getElementById('easecolors');
+    fadeButton.addEventListener('click', function(e){
+      e.preventDefault();
+      _colorEasing = !_colorEasing;
+      fadeButton.classList.toggle('active');
+    });
+  </script>
+</body>
+</html>
