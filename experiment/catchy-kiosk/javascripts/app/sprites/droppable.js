@@ -19,7 +19,7 @@ _catchy.Droppable = function(sprite, isGood) {
     _scale = new EasingFloat(1, 5, 0.001);
     _speed = 5 * _catchy.screen.scaleV;
     _isGood = isGood;
-    _spriteShadow = _catchy.spriteBuilder.getScaledSvgFromSvg(_catchy.screen.container, 'shadow', _catchy.screen.scaleV * _baseScale, getDimensions);
+    _spriteShadow = _catchy.spriteBuilder.getScaledSvgFromSvg(_catchy.screen.gameContainer, 'shadow', _catchy.screen.scaleV * _baseScale, getDimensions);
     _shadowY = _catchy.screen.height - (44 * _catchy.screen.scaleV);
     _missedY = _catchy.screen.height - (88 * _catchy.screen.scaleV);
     if(_sprite.height > 0) getDimensions();

@@ -33,7 +33,7 @@ _catchy.Droppables = function() {
     _scale = 0.42 * _catchy.screen.scaleV;
     _spriteX = new EasingFloat(0.5, 5, 0.001);
 
-    _spriteContainer = new _catchy.Sprite(_catchy.spriteBuilder.newSpriteContainer(_catchy.screen.container));
+    _spriteContainer = new _catchy.Sprite(_catchy.spriteBuilder.newSpriteContainer(_catchy.screen.gameContainer));
     _spriteContainer.setScale(_catchy.screen.scaleV * _scale);
 
     _sprite = _catchy.spriteBuilder.getScaledSvgFromSvg(_spriteContainer.el, 'dropper', _catchy.screen.scaleV, getDimensions)
@@ -54,11 +54,11 @@ _catchy.Droppables = function() {
   var buildDroppables = function() {
     _items = [];
     for (var i = 0; i < _goodItems.length; i++) {
-      var item = new _catchy.Droppable(_catchy.spriteBuilder.getScaledSvgFromSvg(_catchy.screen.container, _goodItems[i], _catchy.screen.scaleV, null), true);
+      var item = new _catchy.Droppable(_catchy.spriteBuilder.getScaledSvgFromSvg(_catchy.screen.gameContainer, _goodItems[i], _catchy.screen.scaleV, null), true);
       _items.push(item);
     };
     for (var i = 0; i < _badItems.length; i++) {
-      var item = new _catchy.Droppable(_catchy.spriteBuilder.getScaledSvgFromSvg(_catchy.screen.container, _badItems[i], _catchy.screen.scaleV, null), false);
+      var item = new _catchy.Droppable(_catchy.spriteBuilder.getScaledSvgFromSvg(_catchy.screen.gameContainer, _badItems[i], _catchy.screen.scaleV, null), false);
       _items.push(item);
     };
   };
@@ -66,7 +66,7 @@ _catchy.Droppables = function() {
   // var buildDroppables = function() {
   //   _items = [];
   //   console.log('buildDroppables', _items);
-  //   _items.push(new _catchy.Droppable(_catchy.spriteBuilder.getScaledSvgFromSvg(_catchy.screen.container, _goodItems[0], _catchy.screen.scaleV, null), true));
+  //   _items.push(new _catchy.Droppable(_catchy.spriteBuilder.getScaledSvgFromSvg(_catchy.screen.gameContainer, _goodItems[0], _catchy.screen.scaleV, null), true));
   // };
 
   var reset = function() {

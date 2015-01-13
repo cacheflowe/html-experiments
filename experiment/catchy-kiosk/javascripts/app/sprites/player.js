@@ -28,9 +28,9 @@ _catchy.Player = function() {
   var init = function() {
     _x = _catchy.screen.width / 2;
     _baseScale = 0.5;
-    _shadowSprite = _catchy.spriteBuilder.getScaledSvgFromSvg(_catchy.screen.container, 'shadow', _catchy.screen.scaleV * _baseScale, getDimensions);
+    _shadowSprite = _catchy.spriteBuilder.getScaledSvgFromSvg(_catchy.screen.gameContainer, 'shadow', _catchy.screen.scaleV * _baseScale, getDimensions);
 
-    _spriteContainer = new _catchy.Sprite(_catchy.spriteBuilder.newSpriteContainer(_catchy.screen.container));
+    _spriteContainer = new _catchy.Sprite(_catchy.spriteBuilder.newSpriteContainer(_catchy.screen.gameContainer));
     _spriteContainer.setScale(_catchy.screen.scaleV * _baseScale);
 
     // build characters library
@@ -140,12 +140,14 @@ _catchy.Player = function() {
           _score += 1;
           _caughtBad = false;
           _catchy.gameplay.setScore(_score);
+          _catchy.sounds.playSound(_catchy.sounds.DRIP_LOW);
         } else {
           _score -= 1;
           if(_score < 0) _score = 0;
           _catchy.gameplay.setScore(_score);
           _caughtBad = true;
           _caughtBadCount = 0;
+          _catchy.sounds.playSound(_catchy.sounds.BOING_TOM);
         }
         // console.log('_score:',_score);
       }

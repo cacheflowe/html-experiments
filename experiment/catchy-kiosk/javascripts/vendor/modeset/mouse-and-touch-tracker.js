@@ -232,12 +232,19 @@ tts.MouseAndTouchTracker.prototype.dispose = function () {
   this.touchmoved = false;
 };
 
-tts.MouseAndTouchTracker.prototype.findPos = function(obj) {
-  this.findPosHelper = tts.CSSHelper.findPos(obj);
-  // store position from cumulative offset
-  this.container_position.x = this.findPosHelper[0];
-  this.container_position.y = this.findPosHelper[1];
+// tts.MouseAndTouchTracker.prototype.findPos = function(obj) {
+//   this.findPosHelper = tts.CSSHelper.findPos(obj);
+//   // store position from cumulative offset
+//   this.container_position.x = this.findPosHelper[0];
+//   this.container_position.y = this.findPosHelper[1];
+// };
+
+tts.MouseAndTouchTracker.prototype.findPos = function(el) {
+  var elRect = el.getBoundingClientRect();
+  this.container_position.x = elRect.left;
+  this.container_position.y = elRect.top;
 };
+
 
 // indexOf polyfill for old IE
 // originally from: http://soledadpenades.com/2007/05/17/arrayindexof-in-internet-explorer/

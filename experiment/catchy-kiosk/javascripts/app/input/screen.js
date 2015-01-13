@@ -5,10 +5,21 @@ _catchy.screen.init = function() {
   MobileUtil.lockTouchScreen(true);
   _catchy.screen.windowsTouchscreenZoomDisable();
 
-  _catchy.screen.width = window.innerWidth;
-  _catchy.screen.height = window.innerHeight;
+  _catchy.screen.container = document.getElementById('app-container');
+  _catchy.screen.gameContainer = document.getElementById('game-container');
+  _catchy.screen.containerLeft = 0;
+  _catchy.screen.width = _catchy.screen.container.offsetWidth;
+  _catchy.screen.height = _catchy.screen.container.offsetHeight;
   _catchy.screen.scaleV = _catchy.screen.height / 680;
-  _catchy.screen.container = document.getElementById('game-container');
+  _catchy.screen.aspectRatio = _catchy.screen.width / _catchy.screen.height;
+
+  // keep screen portrait with a letterbox even on wide screens
+  if(_catchy.screen.aspectRatio > 0.8) {
+    var containerWidth = Math.round(_catchy.screen.height * 0.8);
+    _catchy.screen.container.style.width = containerWidth + 'px';
+    _catchy.screen.containerLeft = (window.innerWidth - containerWidth) / 2;
+    _catchy.screen.container.style.left = Math.round(_catchy.screen.containerLeft) + 'px';
+  }
 
   _catchy.screen.recurseDisableElements(_catchy.screen.container);
   _catchy.screen.disableRightClick(_catchy.screen.container);
@@ -18,8 +29,8 @@ _catchy.screen.init = function() {
 };
 
 _catchy.screen.onResize = function(e) {
-  _catchy.screen.width = window.innerWidth;
-  _catchy.screen.height = window.innerHeight;
+  _catchy.screen.width = _catchy.screen.gameContainer.offsetWidth;
+  _catchy.screen.height = _catchy.screen.gameContainer.offsetHeight;
   _catchy.screen.scaleV = _catchy.screen.height / 680;
 };
 

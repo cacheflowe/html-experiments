@@ -9,8 +9,8 @@ _catchy.Score = function() {
       _score;
 
   var init = function() {
-    _sprite = _catchy.spriteBuilder.getScaledSvgFromSvg(_catchy.screen.container, 'score-bg', _catchy.screen.scaleV, getDimensions);
-    _spriteText = _catchy.spriteBuilder.getTextField(_catchy.screen.container, _catchy.screen.scaleV, "0");
+    _sprite = _catchy.spriteBuilder.getScaledSvgFromSvg(_catchy.screen.gameContainer, 'score-bg', _catchy.screen.scaleV, getDimensions);
+    _spriteText = _catchy.spriteBuilder.getTextField(_catchy.screen.gameContainer, _catchy.screen.scaleV, "0");
     _spriteBgFill = document.getElementById('score-color-bg');
     if(_sprite.height > 0) getDimensions();
     reset();

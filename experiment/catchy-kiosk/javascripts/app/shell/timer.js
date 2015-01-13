@@ -12,8 +12,8 @@ _catchy.Timer = function() {
 
   var init = function() {
     _active = false;
-    _sprite = _catchy.spriteBuilder.getScaledSvgFromSvg(_catchy.screen.container, 'time-banner', _catchy.screen.scaleV, getDimensions);
-    _spriteText = _catchy.spriteBuilder.getTextField(_catchy.screen.container, _catchy.screen.scaleV, "0:00");
+    _sprite = _catchy.spriteBuilder.getScaledSvgFromSvg(_catchy.screen.gameContainer, 'time-banner', _catchy.screen.scaleV, getDimensions);
+    _spriteText = _catchy.spriteBuilder.getTextField(_catchy.screen.gameContainer, _catchy.screen.scaleV, "0:00");
     if(_sprite.height > 0) getDimensions();
   };
 
@@ -36,6 +36,11 @@ _catchy.Timer = function() {
     _active = true;
   };
 
+  var reset = function() {
+    _spriteText.setText("0:" + GAME_TIME/1000);
+    _active = false;
+  };
+
   var isActive = function() {
     return _active;
   };
@@ -48,7 +53,7 @@ _catchy.Timer = function() {
       _active = false;
     }
     if(_seconds != _lastSeconds) {
-      if(_seconds > 9) 
+      if(_seconds > 9)
         _spriteText.setText("0:"+_seconds);
       else
         _spriteText.setText("0:0"+_seconds);
@@ -61,6 +66,7 @@ _catchy.Timer = function() {
   init();
   return {
     update : update,
+    reset : reset,
     startGame : startGame,
     isActive : isActive
   };
