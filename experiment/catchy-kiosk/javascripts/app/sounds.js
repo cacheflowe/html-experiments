@@ -26,7 +26,6 @@ _catchy.CatchySounds = function() {
   };
 
   var playSound = function(sound, loops) {
-    return;
     if(loops == true) {
       sound.play({ loops: 999 });
     } else {
