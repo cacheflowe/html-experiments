@@ -1,0 +1,127 @@
+<html>
+  <head>
+    <title>Hearts</title>
+    <meta property="og:site_name" content="HTML Experiments by CacheFlowe"/>
+    <meta property="og:title" content="Word Canvas"/>
+    <style>
+      html, body {
+        background: #000;
+        margin: 0px;
+        padding: 0px;
+        overflow: hidden;
+        text-align: center;
+      }
+      canvas {
+        background: black;
+        max-width: 100%;
+      }
+      #word-canvas {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="word-canvas" width="1000" height="400"></canvas>
+    <canvas id="draw-canvas" width="1000" height="400"></canvas>
+    <script type="text/javascript" src="../../javascripts/modeset/canvas_util.js"></script>
+    <script type="text/javascript" src="../../javascripts/modeset/math_util.js"></script>
+    <script>
+      // draw text to hidden canvas
+      var canvasWord = document.getElementById('word-canvas');
+      var ctx = canvasWord.getContext('2d');
+      ctx.font = "bold 220px Helvetica";
+      ctx.fillStyle = "white";
+      ctx.textAlign = "center";
+      ctx.fillText("WILLOW", canvasWord.width/2, canvasWord.height * 0.67);
+
+      // setup canvas
+      var canvasDraw = document.getElementById('draw-canvas');
+      var context = canvasDraw.getContext('2d');
+      // get word canvas pixel data
+      _imagePixelsData = CanvasUtil.getImageDataForContext( ctx );
+
+      document.getElementById('draw-canvas').style.marginTop = (window.innerHeight * 0.3) + 'px'
+
+      function Particle() {
+        var _x = 0,
+            _y = 0,
+            _size = 0,
+            _color = '';
+        return {
+          reset: function(x, y){
+            _x = x;
+            _y = y;
+            _size = 0;
+            _color = CanvasUtil.rgbToCanvasColor( MathUtil.randRange(200,255), MathUtil.randRange(100,205), MathUtil.randRange(200,255), 1.0 );
+          },
+          active: function(){
+            return _size < 7;
+          },
+          update: function(){
+            _size += 0.2;
+            _y -= 0.2;
+            context.fillStyle = _color;
+            context.beginPath();
+            context.arc(_x, _y, _size, 0, 2*Math.PI);
+            context.fill();
+          }
+        };
+      }
+
+      var particles = [];
+
+      // loop it / draw hearts
+      function draw() {
+        requestAnimationFrame(draw);
+
+
+        var attempts = 0;
+        while(attempts < 150) {
+          var randX = MathUtil.randRange(0,canvasWord.width);
+          var randY = MathUtil.randRange(0,canvasWord.height);
+          var color = CanvasUtil.getPixelFromImageData(_imagePixelsData, canvasWord.width, randX, randY); //CanvasUtil.getPixelColorFromContext( _contextSource, col, row );
+          if(color[0] > 0) {
+            var x = randX;
+            var y = randY;
+
+            var foundParticle = false;
+            for(var i=0; i < particles.length; i++) {
+              if(particles[i].active() == false) {
+                particles[i].reset(randX, randY);
+                foundParticle = true;
+                break;
+              }
+            }
+            if(foundParticle == false) {
+              var newParticle = new Particle();
+              newParticle.reset(randX, randY);
+              particles.push(newParticle);
+            }
+          }
+          attempts++;
+        }
+
+        // draw fading overlay
+        context.beginPath();
+        context.fillStyle = "rgba(0,0,0,0.02)";
+        context.rect(0, 0, canvasDraw.width, canvasDraw.height);
+        context.fill();
+
+
+        // update active particles
+        for(var i=0; i < particles.length; i++) {
+          if(particles[i].active() == true) {
+            particles[i].update();
+          }
+        }
+      }
+      requestAnimationFrame(draw);
+
+      // save to image
+      // canvasDraw.addEventListener('click',function(){
+      //   CanvasUtil.saveCanvas( context );
+      // },false);
+
+    </script>
+  </body>
+</html>
