@@ -39,9 +39,10 @@
       var context = canvasDraw.getContext('2d');
       // get word canvas pixel data
       _imagePixelsData = CanvasUtil.getImageDataForContext( ctx );
-
+      // position in middle of screen sort of
       document.getElementById('draw-canvas').style.marginTop = (window.innerHeight * 0.3) + 'px'
 
+      // stupid simple particle object
       function Particle() {
         var _x = 0,
             _y = 0,
@@ -67,23 +68,20 @@
           }
         };
       }
-
       var particles = [];
 
-      // loop it / draw hearts
       function draw() {
         requestAnimationFrame(draw);
 
-
+        // make 150 particle attempts per frame
         var attempts = 0;
         while(attempts < 150) {
+          // pick a random spot on the canvas, looking for white
           var randX = MathUtil.randRange(0,canvasWord.width);
           var randY = MathUtil.randRange(0,canvasWord.height);
           var color = CanvasUtil.getPixelFromImageData(_imagePixelsData, canvasWord.width, randX, randY); //CanvasUtil.getPixelColorFromContext( _contextSource, col, row );
           if(color[0] > 0) {
-            var x = randX;
-            var y = randY;
-
+            // find a dead particle, or add a new one
             var foundParticle = false;
             for(var i=0; i < particles.length; i++) {
               if(particles[i].active() == false) {
@@ -107,7 +105,6 @@
         context.rect(0, 0, canvasDraw.width, canvasDraw.height);
         context.fill();
 
-
         // update active particles
         for(var i=0; i < particles.length; i++) {
           if(particles[i].active() == true) {
@@ -116,12 +113,6 @@
         }
       }
       requestAnimationFrame(draw);
-
-      // save to image
-      // canvasDraw.addEventListener('click',function(){
-      //   CanvasUtil.saveCanvas( context );
-      // },false);
-
     </script>
   </body>
 </html>

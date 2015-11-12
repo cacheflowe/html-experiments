@@ -15,7 +15,7 @@
 <body>
   <canvas id="draw" width="800" height="800"></canvas>
 
-  <script type="text/javascript">  
+  <script type="text/javascript">
   // cluster rows
   var _rowPixels = 5;
   var _row = 0;
@@ -32,7 +32,7 @@
         startColor = CanvasUtil.getPixelColorFromContext( _contextSource, _col, _row );
         _context.fillStyle = CanvasUtil.rgbToCanvasColor( startColor[0], startColor[1], startColor[2], 1.0 );
       }
-      // keep drawing current color      
+      // keep drawing current color
       _context.fillRect( _col, _row, _rowPixels, _rowPixels );
       _col += _rowPixels;
     }
@@ -42,7 +42,7 @@
 
 
 
-  // Sketch ------------------------------------------  
+  // Sketch ------------------------------------------
   var _canvas = document.getElementById("draw");
   var _context = _canvas.getContext("2d");
   var _canvasSource = null;
@@ -73,15 +73,15 @@
       fillClusters();
     }, 10);
   };
-  
+
   // load and draw image
   CanvasUtil.loadImageToContext("../../media/images/dawn2.png", loadImageToContext);
-    
+
   // canvas saving
   _canvas.addEventListener('click',function(){
     CanvasUtil.saveCanvas( _context );
   },false);
-  
+
   </script>
 </body>
 </html>

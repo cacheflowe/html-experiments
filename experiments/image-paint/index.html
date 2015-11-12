@@ -10,7 +10,7 @@
 	<script>
 	var canvas = document.getElementById("e");
 	var context = canvas.getContext("2d");
-	
+
 	// load and draw image
 	var image = new Image();
 	var imgW, imgH;
@@ -24,10 +24,10 @@
 		canvas.height = imgH;
 		imgLoaded = true;
 		context.drawImage( image, 0, 0 );
-		
+
 		createParticles();
 	};
-	
+
 	function Particle(){
 		var self = this;
 
@@ -61,14 +61,14 @@
 
 
 			if(self.x > imgW || self.x < 0 || self.y > imgH || self.y < 0 || self.alpha <= 0.01 || self.radius > 5 || self.size <= 0) self.reset();
-	
+
 			context.fillStyle = 'rgba('+self.colorArr[0]+','+self.colorArr[1]+','+self.colorArr[2]+','+self.alpha+')';
 			context.fillRect(self.x, self.y, self.size, self.size);
 		};
-		
+
 		this.reset();
 	}
-	
+
 	var particles = [];
 	var numParticles = 400;
 	function createParticles(){
@@ -77,7 +77,7 @@
 			particles.push( new Particle() );
 		}
 	}
-	
+
 	setTimeout(function(){ draw(); },10);
 	function draw(){
 		if( imgLoaded ) {
@@ -98,7 +98,7 @@
 	<script>
 	var canvas = document.getElementById("e");
 	var context = canvas.getContext("2d");
-	
+
 	var image = new Image();
 	var imgW, imgH;
 	var imgLoaded = false;
@@ -109,11 +109,11 @@
 		console.log(imgW,imgH);
 		imgLoaded = true;
 	};
-	
+
 	canvas.addEventListener('mousemove',onMouseMoved,false);
 	var curX = 0;
 	var curY = 0;
-	
+
 	/*
 	setTimeout(function(){
 		if( imgLoaded ) {
@@ -121,13 +121,13 @@
 		}
 	},33);
 	*/
-	
+
 	function onMouseMoved(e){
 		if( imgLoaded ) {
 			draw( e.clientX, e.clientY );
 		}
 	}
-	
+
 	function draw( x, y ){
 		context.drawImage( image, x - imgW/2, y - imgH/2 );
 	}
@@ -140,7 +140,7 @@
 	<script>
 	var canvas = document.getElementById("e");
 	var context = canvas.getContext("2d");
-	
+
 	// load and draw image
 	var image = new Image();
 	var imgW, imgH;
@@ -153,10 +153,10 @@
 		canvas.height = imgH;
 		imgLoaded = true;
 		context.drawImage( image, 0, 0 );
-		
+
 		createParticles();
 	};
-	
+
 	function Particle(){
 		var self = this;
 
@@ -166,7 +166,7 @@
 			self.alpha = 1;
 			self.dirX = ( Math.random() > 0.5 ) ? 1 : -1;
 			self.dirY = ( Math.random() > 0.5 ) ? 1 : -1;
-			
+
 			try {
 				self.pxData = context.getImageData( self.x, self.y, 1, 1 ).data;
 				self.colorArr = [self.pxData[0], self.pxData[1], self.pxData[2]];
@@ -179,16 +179,16 @@
 			self.alpha -= 0.02;
 
 			if(self.x > imgW || self.x < 0 || self.y > imgH || self.y < 0 || self.alpha <= 0) self.reset();
-	
+
 			context.fillStyle = 'rgba('+self.colorArr[0]+','+self.colorArr[1]+','+self.colorArr[2]+','+self.alpha+')';
 			context.strokeStyle = '#000';
 			context.lineWidth = 1;
 			context.fillRect(self.x, self.y, 1, 1);
 		};
-		
+
 		this.reset();
 	}
-	
+
 	var particles = [];
 	var numParticles = 400;
 	function createParticles(){
@@ -197,7 +197,7 @@
 			particles.push( new Particle() );
 		}
 	}
-	
+
 	setTimeout(function(){ draw(); },10);
 	function draw(){
 		if( imgLoaded ) {
@@ -216,7 +216,7 @@
 	<script>
 	var canvas = document.getElementById("e");
 	var context = canvas.getContext("2d");
-	
+
 	// load and draw image
 	var image = new Image();
 	var imgW, imgH;
@@ -229,10 +229,10 @@
 		canvas.height = imgH;
 		imgLoaded = true;
 		context.drawImage( image, 0, 0 );
-		
+
 		createParticles();
 	};
-	
+
 	function Particle(){
 		var self = this;
 
@@ -242,7 +242,7 @@
 			self.alpha = 1;
 			self.dirX = ( Math.random() > 0.5 ) ? 1 : -1;
 			self.dirY = ( Math.random() > 0.5 ) ? 1 : -1;
-			
+
 			try {
 				self.pxData = context.getImageData( self.x, self.y, 1, 1 ).data;
 				self.colorArr = [self.pxData[0], self.pxData[1], self.pxData[2]];
@@ -257,14 +257,14 @@
 			self.alpha -= 0.01;
 
 			if(self.x > imgW || self.x < 0 || self.y > imgH || self.y < 0 || self.alpha <= 0) self.reset();
-	
+
 			context.fillStyle = 'rgba('+self.colorArr[0]+','+self.colorArr[1]+','+self.colorArr[2]+','+self.alpha+')';
 			context.fillRect(self.x, self.y, 1, 15);
 		};
-		
+
 		this.reset();
 	}
-	
+
 	var particles = [];
 	var numParticles = 200;
 	function createParticles(){
@@ -273,7 +273,7 @@
 			particles.push( new Particle() );
 		}
 	}
-	
+
 	setTimeout(function(){ draw(); },10);
 	function draw(){
 		if( imgLoaded ) {

@@ -1,13 +1,12 @@
 <html>
   <head>
     <title>Hearts</title>
-    <meta property="og:site_name" content="HTML Experiments by CacheFlowe"/> 
-    <meta property="og:title" content="Hearts"/> 
-    <meta property="og:description" content="<3 Hearts for Dawn <3"/> 
-    <meta property="og:type" content="website"/> 
-    <meta property="og:url" content="http://cacheflowe.github.com/html-experiments/experiment/hearts/"/> 
-    <meta property="og:image" content="http://cacheflowe.github.com/html-experiments/experiment/hearts/preview.png"/> 
-    <meta property="fb:admins" content="1080085161"/>
+    <meta property="og:site_name" content="HTML Experiments by CacheFlowe"/>
+    <meta property="og:title" content="Hearts"/>
+    <meta property="og:description" content="<3 Hearts for Dawn <3"/>
+    <meta property="og:type" content="website"/>
+    <meta property="og:url" content="http://cacheflowe.github.com/html-experiments/experiment/hearts/"/>
+    <meta property="og:image" content="http://cacheflowe.github.com/html-experiments/experiment/hearts/preview.png"/>
     <style>
       html, body {
         background: black;
@@ -21,7 +20,7 @@
     </style>
   </head>
   <body>
-    <canvas id="myCanvas" width="100" height="100"></canvas>
+    <canvas id="heart-canvas" width="100" height="100"></canvas>
     <script type="text/javascript" src="../../javascripts/modeset/canvas_util.js"></script>
     <script>
       var drawHeart = function( context, x, y, size, rotation ) {
@@ -43,14 +42,14 @@
         context.moveTo(0, bottom);
 
         // draw 2 halves with bezier curve
-        context.bezierCurveTo( 
-          -crtl1x, crtl1y, 
+        context.bezierCurveTo(
+          -crtl1x, crtl1y,
           -crtl2x, crtl2y,
           0, top
         );
         context.moveTo(0, bottom);
-        context.bezierCurveTo( 
-          crtl1x, crtl1y, 
+        context.bezierCurveTo(
+          crtl1x, crtl1y,
           crtl2x, crtl2y,
           0, top
         );
@@ -61,7 +60,7 @@
       };
 
       // setup canvas
-      var canvas = document.getElementById('myCanvas');
+      var canvas = document.getElementById('heart-canvas');
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
       var context = canvas.getContext('2d');
@@ -73,7 +72,8 @@
       var numHearts = 300;
 
       // loop it / draw hearts
-      setInterval(function(){
+      function draw() {
+        requestAnimationFrame(draw);
         frameCount++;
         incStep = 30 + 25 * Math.cos(frameCount/150);
         numHearts = 300 + 150 * Math.cos(frameCount/200);
@@ -83,7 +83,9 @@
           context.fillStyle = 'rgba('+ Math.round(startInc + i * colorInc) % 255 +',0,0,0.5)';
           drawHeart( context, canvas.width/2, canvas.height/2, i, Math.sin((startInc + i)/100)/4 );
         }
-      }, 50);
+      }
+      requestAnimationFrame(draw);
+
 
       // save to image
       canvas.addEventListener('click',function(){

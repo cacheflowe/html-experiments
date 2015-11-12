@@ -17,7 +17,7 @@
   <canvas id="draw"></canvas>
   <input type="file" id="file-input" size="10" multiple="false" />
 
-  <script type="text/javascript">  
+  <script type="text/javascript">
 
   // sweep across the grid and tighten up these parameters each pass for a refined posterization
   var _skipPixels = 25;
@@ -39,7 +39,7 @@
     while( distance < _maxArmLength && x > 0 && y > 0 && x < _width && y < _height && CanvasUtil.rgbDifference( color[0], color[1], color[2], curColor[0], curColor[1], curColor[2] ) < _colorThreshold ) {
       x = x + Math.sin( circleInc ) * _armSpeed;
       y = y + Math.cos( circleInc ) * _armSpeed;
-      curColor = CanvasUtil.getPixelColorFromContext( _contextSource, Math.round(x), Math.round(y) );
+      curColor = CanvasUtil.getPixelFromImageData(_imagePixelsData, _width, Math.round(x), Math.round(y)); //CanvasUtil.getPixelColorFromContext( _contextSource, Math.round(x), Math.round(y) );
       distance++;
     }
     // step back one and save position
@@ -49,11 +49,11 @@
 
   // polygon controller
   var ClusterPolygon = function() {
-    
+
     var col = Math.round(_col);//MathUtil.randRange(0,_width-1);
     var row = Math.round(_row);//MathUtil.randRange(0,_height-1);
     // console.log('rendering from: ',col,row);
-    var startColor = CanvasUtil.getPixelColorFromContext( _contextSource, col, row );
+    var startColor = CanvasUtil.getPixelFromImageData(_imagePixelsData, _width, col, row); //CanvasUtil.getPixelColorFromContext( _contextSource, col, row );
     var numArms = _numArms;
     var arms = [];
     for( var i=0; i < numArms; i++ ) {
@@ -95,7 +95,7 @@
 
 
 
-  // Sketch ------------------------------------------  
+  // Sketch ------------------------------------------
   var _canvas = document.getElementById("draw");
   var _fileInput = document.getElementById("file-input");
   var _context = _canvas.getContext("2d");
@@ -103,6 +103,7 @@
   var _contextSource = null;
   var _width;
   var _height;
+  var _imagePixelsData;
   _canvas.style.border = '1px solid black';
 
 
@@ -113,6 +114,7 @@
     _width = _canvas.width = ctx.canvas.width;
     _height = _canvas.height = ctx.canvas.height;
     _context.drawImage( image, 0, 0 );
+    _imagePixelsData = CanvasUtil.getImageDataForContext( _context );
     // kick off the loop
     fillClusters();
   };
@@ -123,9 +125,9 @@
       fillClusters();
     }, 10);
   };
-  
+
   // load and draw image
-  CanvasUtil.loadImageToContext("../../media/images/justin-rp-2.png", loadImageToContext);
+  CanvasUtil.loadImageToContext("../../media/images/pgitty.jpg", loadImageToContext);
   CanvasUtil.loadImageToContextFromDrop( _canvas, function( apiFiles ){
     CanvasUtil.imagesSelected( apiFiles, loadImageToContext );
   });

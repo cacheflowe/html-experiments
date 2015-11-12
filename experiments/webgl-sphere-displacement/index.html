@@ -26,7 +26,7 @@
   <style type="text/css"></style></head>
 
   <body>
-    <script src="../../javascripts/three/three.min.js"></script>
+    <script src="../../javascripts/three/three.min-54.js"></script>
     <script src="../../javascripts/three/trackball-controls.js"></script>
     <script src="../../javascripts/modeset/elastic-point-3.js"></script>
     <script src="../../javascripts/modeset/sound_player.js"></script>
@@ -110,7 +110,7 @@
           for(var i=0; i < numVertices; i++) {
             vertex = mesh.geometry.vertices[i];
             vertexOrig = meshDefault.geometry.vertices[i];
-            vertex.set( 
+            vertex.set(
               vertexOrig.x + vertexOrig.x * spectrum[i]/255,
               vertexOrig.y + vertexOrig.y * spectrum[i]/255,
               vertexOrig.z + vertexOrig.z * spectrum[i]/255
@@ -123,7 +123,7 @@
           for(var i=0; i < mesh.geometry.vertices.length; i++) {
             vertex = mesh.geometry.vertices[i];
             vertexOrig = meshDefault.geometry.vertices[i];
-            vertex.set( 
+            vertex.set(
               vertexOrig.x + 3*Math.sin(frameCount*i),
               vertexOrig.y + 3*Math.cos(frameCount*i),
               vertexOrig.z + 3*Math.cos(frameCount*i)
@@ -144,7 +144,7 @@
             vertex = mesh.geometry.vertices[i];
             vertexOrig = meshDefault.geometry.vertices[i];
             elasticPoints[i].update();
-            vertex.set( 
+            vertex.set(
               elasticPoints[i].x(),
               elasticPoints[i].y(),
               elasticPoints[i].z()
@@ -164,7 +164,7 @@
             vertexOrig = meshDefault.geometry.vertices[i];
             indexOffsetVertex = meshDefault.geometry.vertices[index];
             vertexNoise = 0.5 * PerlinNoise.noise( indexOffsetVertex.x * vertexNoiseMult, indexOffsetVertex.y * vertexNoiseMult, indexOffsetVertex.z * vertexNoiseMult );
-            elasticPoints[i].setTarget( 
+            elasticPoints[i].setTarget(
               vertexOrig.x - vertexOrig.x * vertexNoise,
               vertexOrig.y - vertexOrig.y * vertexNoise,
               vertexOrig.z - vertexOrig.z * vertexNoise
@@ -175,7 +175,7 @@
             // reset elastic vertices
             for(var i=0; i < numVertices; i++) {
               vertexOrig = meshDefault.geometry.vertices[i];
-              elasticPoints[i].setTarget( 
+              elasticPoints[i].setTarget(
                 vertexOrig.x,
                 vertexOrig.y,
                 vertexOrig.z
@@ -189,7 +189,7 @@
           for(var i=0; i < numFaces; i++) {
             faceOrig = meshDefault.geometry.faces[i];
             // vertexNoise = 0.5 * PerlinNoise.noise( indexOffsetVertex.x * vertexNoiseMult, indexOffsetVertex.y * vertexNoiseMult, indexOffsetVertex.z * vertexNoiseMult );
-            // elasticPoints[i].setTarget( 
+            // elasticPoints[i].setTarget(
             //   vertexOrig.x - vertexOrig.x * vertexNoise,
             //   vertexOrig.y - vertexOrig.y * vertexNoise,
             //   vertexOrig.z - vertexOrig.z * vertexNoise
@@ -243,7 +243,7 @@
         container.appendChild( renderer.domElement );
 
         frameCount = 0;
- 
+
         ball1 = new AudioBall( 0xff00ff, '../../media/audio/porta-note.mp3', new THREE.Vector3( -60, 0, 0 ) );
         // ball1 = new AudioBall( 0xff00ff, null, new THREE.Vector3( -60, 0, 0 ) );
         ball2 = new AudioBall( 0x00ffff, null, new THREE.Vector3( 60, 0, 0 ) );

@@ -2,197 +2,236 @@
 <html>
   <head>
     <title>Plasma</title>
-
-    <script type="text/javascript">
-        function initPlasma()
-        {
-            /* MATH FUNCTIONS ------------------------------ */
-            
-            function MathUtil() {}
-
-            MathUtil.getDistance = function ( a, b ) {
-                return Math.abs( Math.sqrt(a*a + b*b) );
-            };
-            
-            MathUtil.randRangeDecimel = function ( min, max ) {		
-                return Math.random() * ( max - min ) + min;
-            };
-            
-            /* GRID CELL CLASS ------------------------------ */
-            
-            var Cell = function( x, y, w, h ) {
-                this.x = x;
-                this.y = y;
-                this.w = w;
-                this.h = h;
-            }
-            
-            Cell.prototype.update = function( r, g, b ) {
-                this.r = r;
-                this.g = g;
-                this.b = b;
-                                
-                this.draw();
-            };
-            
-            Cell.prototype.draw = function() {
-                if( !plasma ) return;
-                
-                // get color, based on distance 
-                var ctrlPt1 = MathUtil.getDistance( this.x - plasma.controlPoints[0].x, this.y - plasma.controlPoints[0].y );
-                var ctrlPt2 = MathUtil.getDistance( this.x - plasma.controlPoints[1].x, this.y - plasma.controlPoints[1].y );
-                var ctrlPt3 = MathUtil.getDistance( this.x - plasma.controlPoints[2].x, this.y - plasma.controlPoints[2].y );
-                
-                var rVal = .5+.5*Math.sin(this.r) * Math.cos(ctrlPt1/100) * Math.cos(ctrlPt2/100) * Math.sin(ctrlPt3/100);
-                var gVal = .2+.5*Math.sin(this.g) * Math.sin(ctrlPt1/100) * Math.sin(ctrlPt2/100) * Math.sin(ctrlPt3/100);
-                var bVal = .2+.5*Math.cos(this.b) * Math.sin(ctrlPt1/100) * Math.cos(ctrlPt2/100) * Math.sin(ctrlPt3/100)
-                
-                // draw pixel to canvas
-                plasma.context.fillStyle = "rgb("+ Math.round( 127 + rVal * 255 ) +","+ Math.round( 127 + gVal * 255 ) +","+ Math.round( 127 + bVal * 255 ) +")"; 
-                plasma.context.fillRect ( this.x, this.y, this.w, this.h );  
-            };
-            
-            
-            /* CONTROL POINT CLASS ------------------------------ */
-            
-            var ControlPoint = function( canvasW, canvasH ) {
-                // create random x,y starting point 
-                this.incX = MathUtil.randRangeDecimel( 0, 2 * Math.PI );
-                this.incY = MathUtil.randRangeDecimel( 0, 2 * Math.PI );
-                // create random x,y oscillating speed 
-                this.incXSpeed = MathUtil.randRangeDecimel( .01, .1 );
-                this.incYSpeed = MathUtil.randRangeDecimel( .01, .1 );
-                // store center point to oscillate around
-                this.centerX = canvasW / 2;
-                this.centerY = canvasH / 2;
-            }
-            
-            ControlPoint.prototype.update = function() {
-                // increment oscillating based on randomly-calculated speed
-                this.incX += this.incXSpeed;
-                this.incY += this.incYSpeed;
-                // update coordinate
-                this.x = this.centerX + this.centerX * Math.sin( this.incX );
-                this.y = this.centerY + this.centerY * Math.sin( this.incY );
-            };
-            
-            
-            /* PLASMA CLASS ------------------------------ */
-            
-            var Plasma = function() {
-                this.COLS = 50;
-                this.ROWS = 50;
-                this.CANVAS_W = 500;
-                this.CANVAS_H = 500;
-                this.FPS = 1000/30;
-                this.NUM_CONTROL_POINTS = 3;
-                
-                this.startR = MathUtil.randRangeDecimel(0,2*Math.PI);
-                this.startG = MathUtil.randRangeDecimel(0,2*Math.PI);
-                this.startB = MathUtil.randRangeDecimel(0,2*Math.PI);
-                this.startIncR = MathUtil.randRangeDecimel(.001,.05);
-                this.startIncG = MathUtil.randRangeDecimel(.001,.05);
-                this.startIncB = MathUtil.randRangeDecimel(.001,.05);
-                this.incR = MathUtil.randRangeDecimel(.0001,.001);
-                this.incG = MathUtil.randRangeDecimel(.0001,.001);
-                this.incB = MathUtil.randRangeDecimel(.0001,.001);
-                
-                this.canvas;
-                this.context;
-                this.grid;
-                
-                this.buildStage();
-                this.createGrid();
-                this.createControlPoints();
-                this.addSaveFunctionality();
-                
-                var self = this;
-                setInterval( function(){ self.update(); }, this.FPS );
-            };
-        
-            Plasma.prototype.buildStage = function() {
-                // create and attach canvas element
-                this.canvas = document.createElement('canvas');
-                this.canvas.width = this.CANVAS_W;
-                this.canvas.height = this.CANVAS_H;
-                document.body.appendChild( this.canvas );
-                
-                // store graphical context
-                this.context = this.canvas.getContext("2d");
-            };
-            
-            Plasma.prototype.createGrid = function() {
-                // calculate "pixel" size
-                var boxW = this.CANVAS_W / this.COLS;
-                var boxH = this.CANVAS_H / this.ROWS;
-                
-                // create 2D array of grid cells
-                this.grid = new Array( this.COLS );
-                for( var i = 0; i < this.COLS; i++ ) {
-                    this.grid[ i ] = new Array( this.ROWS )
-                    for( var j = 0; j < this.ROWS; j++ ) {
-                        this.grid[ i ][ j ] = new Cell( i * boxW, j * boxH, boxW, boxH );
-                    }
-                }
-            };
-            
-            Plasma.prototype.createControlPoints = function() {
-                this.controlPoints = [];
-                for ( var i = 0; i < this.NUM_CONTROL_POINTS; i++ ) {
-                    this.controlPoints.push( new ControlPoint( this.CANVAS_W, this.CANVAS_H ) );
-                }
-            };
-            
-            Plasma.prototype.addSaveFunctionality = function() {
-                var self = this;
-                this.canvas.addEventListener("click", function(e) { 
-                    window.open( self.canvas.toDataURL("image/jpeg") ); 
-                }, false);
-            };
-            
-            Plasma.prototype.update = function() {
-                
-                // increment the starting colors
-                this.startR += this.startIncR;
-                var curR = this.startR;
-                this.startG += this.startIncG;
-                var curG = this.startG;
-                this.startB += this.startIncB;
-                var curB = this.startB;
-                
-                // update control points
-                for ( var i = 0; i < this.NUM_CONTROL_POINTS; i++ ) {
-                    this.controlPoints[i].update();
-                }
-                
-                // increment grid cells and draw to canvas
-                for (var i = 0; i < this.COLS; i++) {
-                    for (var j = 0; j < this.ROWS; j++) {
-                        // send new base color to cells
-                        this.grid[i][j].update( curR, curG, curB );
-                        
-                        // increment color as we traverse the grid
-                        curR += this.incR;
-                        curG += this.incG * 3;
-                        curB += this.incB;
-                    }
-                }
-            };
-            
-            
-            // kick off the plasma controller
-            var plasma = new Plasma();     
-        }
-    </script>
-        
     <style>
       * {
-          background-color:black;
-          border:0;
-          padding:0;
-          margin:0;
+          background-color: black;
+          border: 0;
+          padding: 0;
+          margin: 0;
+          text-align: center;
+      }
+      canvas {
+        display: inline-block;
       }
     </style>
   </head>
-  <body onload="initPlasma();"></body>
+  <body></body>
+  <script type="text/javascript">
+    (function initPlasma() {
+        /* MATH FUNCTIONS ------------------------------ */
+
+        function MathUtil() {}
+
+        MathUtil.getDistance = function ( a, b ) {
+            return Math.abs( Math.sqrt(a*a + b*b) );
+        };
+
+        MathUtil.randRangeDecimel = function ( min, max ) {
+            return Math.random() * ( max - min ) + min;
+        };
+
+        var CanvasUtil = CanvasUtil || {};
+
+        CanvasUtil.clearColor = 'rgba(0,0,0,0)';
+
+        CanvasUtil.dataImgPrefix = 'data:image/png;base64,';
+
+        CanvasUtil.getPixelColorFromContext = function( context, x, y ) {
+          var pixelData = context.getImageData( x, y, 1, 1 ).data;
+          return [pixelData[0], pixelData[1], pixelData[2]];
+        };
+
+
+        var Cell = function( x, y, w, h, speed ) {
+            this.x = x;
+            this.y = y;
+            this.w = w;
+            this.h = h;
+            this.speedDiv = speed;
+        }
+
+        Cell.prototype.update = function( r, g, b ) {
+            this.r = r;
+            this.g = g;
+            this.b = b;
+
+            this.draw();
+        };
+
+        Cell.prototype.draw = function() {
+            if( !plasma ) return;
+
+            // get color, based on distance
+            var ctrlPt1 = MathUtil.getDistance( this.x - plasma.controlPoints[0].x, this.y - plasma.controlPoints[0].y );
+            var ctrlPt2 = MathUtil.getDistance( this.x - plasma.controlPoints[1].x, this.y - plasma.controlPoints[1].y );
+            var ctrlPt3 = MathUtil.getDistance( this.x - plasma.controlPoints[2].x, this.y - plasma.controlPoints[2].y );
+
+            var rVal = .5+.5*Math.sin(this.r) * Math.cos(ctrlPt1/this.speedDiv) * Math.cos(ctrlPt2/this.speedDiv) * Math.sin(ctrlPt3/this.speedDiv);
+            var gVal = .2+.5*Math.sin(this.g) * Math.sin(ctrlPt1/this.speedDiv) * Math.sin(ctrlPt2/this.speedDiv) * Math.sin(ctrlPt3/this.speedDiv);
+            var bVal = .2+.5*Math.cos(this.b) * Math.sin(ctrlPt1/this.speedDiv) * Math.cos(ctrlPt2/this.speedDiv) * Math.sin(ctrlPt3/this.speedDiv);
+
+            // draw pixel to canvas
+            plasma.context.fillStyle = "rgb("+ Math.round( 127 + rVal * 255 ) +","+ Math.round( 127 + gVal * 255 ) +","+ Math.round( 127 + bVal * 255 ) +")";
+            plasma.context.fillRect ( this.x, this.y, this.w, this.h );
+        };
+
+
+        /* CONTROL POINT CLASS ------------------------------ */
+
+        var ControlPoint = function( canvasW, canvasH ) {
+            // create random x,y starting point
+            this.incX = MathUtil.randRangeDecimel( 0, 2 * Math.PI );
+            this.incY = MathUtil.randRangeDecimel( 0, 2 * Math.PI );
+            // create random x,y oscillating speed
+            this.incXSpeed = MathUtil.randRangeDecimel( .001, .05 );
+            this.incYSpeed = MathUtil.randRangeDecimel( .001, .05 );
+            // store center point to oscillate around
+            this.centerX = canvasW / 2;
+            this.centerY = canvasH / 2;
+        }
+
+        ControlPoint.prototype.update = function() {
+            // increment oscillating based on randomly-calculated speed
+            this.incX += this.incXSpeed;
+            this.incY += this.incYSpeed;
+            // update coordinate
+            this.x = this.centerX + this.centerX * Math.sin( this.incX );
+            this.y = this.centerY + this.centerY * Math.sin( this.incY );
+        };
+
+
+        /* PLASMA CLASS ------------------------------ */
+
+        var Plasma = function() {
+            this.COLS = 100;
+            this.ROWS = 100;
+            var smallerDimension = (window.innerWidth < window.innerHeight) ? window.innerWidth : window.innerHeight;
+            this.CANVAS_W = smallerDimension;
+            this.CANVAS_H = smallerDimension;
+            this.NUM_CONTROL_POINTS = 3;
+
+            this.startR = MathUtil.randRangeDecimel(0,2*Math.PI);
+            this.startG = MathUtil.randRangeDecimel(0,2*Math.PI);
+            this.startB = MathUtil.randRangeDecimel(0,2*Math.PI);
+            this.startIncR = MathUtil.randRangeDecimel(.001,.05);
+            this.startIncG = MathUtil.randRangeDecimel(.001,.05);
+            this.startIncB = MathUtil.randRangeDecimel(.001,.05);
+            this.incR = MathUtil.randRangeDecimel(.0001,.001);
+            this.incG = MathUtil.randRangeDecimel(.0001,.001);
+            this.incB = MathUtil.randRangeDecimel(.0001,.001);
+
+            this.canvas;
+            this.context;
+            this.grid;
+
+            this.buildElloCanvas();
+        };
+
+        Plasma.prototype.loadedEllo = function() {
+            this.buildCanvas();
+            this.createGrid();
+            this.createControlPoints();
+            this.addSaveFunctionality();
+
+            this.update();
+        };
+
+        Plasma.prototype.buildCanvas = function() {
+            this.canvas = document.createElement('canvas');
+            this.canvas.width = this.CANVAS_W;
+            this.canvas.height = this.CANVAS_H;
+            document.body.appendChild( this.canvas );
+            this.context = this.canvas.getContext("2d");
+        };
+
+        Plasma.prototype.buildElloCanvas = function() {
+            this.elloPng = CanvasUtil.dataImgPrefix + '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';
+            this.elloCanvas = document.createElement('canvas');
+            this.elloCanvas.width = this.COLS;
+            this.elloCanvas.height = this.ROWS;
+            this.elloContext = this.elloCanvas.getContext("2d");
+
+            var self = this;
+            var image = new Image();
+            image.onload = function() {
+                self.elloContext.drawImage( image, 0, 0, self.elloCanvas.width, self.elloCanvas.height );
+                requestAnimationFrame(function(){
+                    self.loadedEllo();
+                });
+            };
+            image.src = this.elloPng;
+        };
+
+        Plasma.prototype.createGrid = function() {
+            // calculate "pixel" size
+            var boxW = this.CANVAS_W / this.COLS;
+            var boxH = this.CANVAS_H / this.ROWS;
+            var oscSpeed = this.CANVAS_W / 3;
+
+            // create 2D array of grid cells
+            this.grid = new Array( this.COLS );
+            for( var i = 0; i < this.COLS; i++ ) {
+                this.grid[ i ] = new Array( this.ROWS )
+                for( var j = 0; j < this.ROWS; j++ ) {
+                    var elloColor = CanvasUtil.getPixelColorFromContext(this.elloContext, i, j );
+                    if(this.elloContext && elloColor[0] != 0 && elloColor[1] != 0 && elloColor[2] != 0) {
+                        this.grid[ i ][ j ] = new Cell( i * boxW, j * boxH, boxW, boxH, oscSpeed );
+                    }
+                }
+            }
+        };
+
+        Plasma.prototype.createControlPoints = function() {
+            this.controlPoints = [];
+            for ( var i = 0; i < this.NUM_CONTROL_POINTS; i++ ) {
+                this.controlPoints.push( new ControlPoint( this.CANVAS_W, this.CANVAS_H ) );
+            }
+        };
+
+        Plasma.prototype.addSaveFunctionality = function() {
+            var self = this;
+            this.canvas.addEventListener("click", function(e) {
+                window.open( self.canvas.toDataURL("image/jpeg") );
+            }, false);
+        };
+
+        Plasma.prototype.update = function() {
+
+            // increment the starting colors
+            this.startR += this.startIncR;
+            var curR = this.startR;
+            this.startG += this.startIncG;
+            var curG = this.startG;
+            this.startB += this.startIncB;
+            var curB = this.startB;
+
+            // update control points
+            for ( var i = 0; i < this.NUM_CONTROL_POINTS; i++ ) {
+                this.controlPoints[i].update();
+            }
+
+            // increment grid cells and draw to canvas
+            for (var i = 0; i < this.COLS; i++) {
+                for (var j = 0; j < this.ROWS; j++) {
+                    // send new base color to cells
+                    if(this.grid[i][j] != null) {
+                        this.grid[i][j].update( curR, curG, curB );
+                    }
+
+                    // increment color as we traverse the grid
+                    curR += this.incR;
+                    curG += this.incG;
+                    curB += this.incB;
+                }
+            }
+
+            var self = this;
+            requestAnimationFrame(function(){
+              self.update();
+            });
+        };
+
+        var plasma = new Plasma();
+    })();
+  </script>
 </html>

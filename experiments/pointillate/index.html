@@ -17,14 +17,14 @@
   <canvas id="draw" width="800" height="800"></canvas>
   <script>
 
-    // Sketch ------------------------------------------  
+    // Sketch ------------------------------------------
     var _canvas = document.getElementById("draw");
     var _context = _canvas.getContext("2d");
     var _contextSource = null;
     var _width;
     var _height;
     _canvas.style.border = '1px solid black';
-    
+
 
     var loadImageToContext = function(canvasCtx){
       _contextSource = canvasCtx;
@@ -47,12 +47,12 @@
 
           var strokeSteps = 20;
           for(var i=0; i < strokeSteps; i++) {
-            CanvasUtil.drawCircle( _context, x+i, y+i, skipPixels/3 * (1+brightness) * (strokeSteps+1-i)/strokeSteps );  //(1-brightness) * 
+            CanvasUtil.drawCircle( _context, x+i, y+i, skipPixels/3 * (1+brightness) * (strokeSteps+1-i)/strokeSteps );  //(1-brightness) *
           }
         }
       }
     };
-    
+
     // load and draw image
     CanvasUtil.loadImageToContext("../../media/images/dawn2.png", loadImageToContext);
 

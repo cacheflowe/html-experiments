@@ -9,36 +9,36 @@
 	<script>
 	var canvas = document.getElementById("e");
 	var context = canvas.getContext("2d");
-		
-	var width = window.innerWidth; 
+
+	var width = window.innerWidth;
 	var height = window.innerHeight;
 	canvas.width = width;
 	canvas.height = height;
-	
-	var cols = 40;
-	var rows = 20;
+
+	var cols = width/50;
 	var colSize = width / cols;
+	var rows = height / colSize;
 	var rowSize = height / rows;
-	
+
 	var range = 120;
-	var fric = .65;
-	var accel = .4;
-	
+	var fric = .87;
+	var accel = .1;
+
 	var drawNumbers = false;
 	var drawLines = false;
-	
+
 	function Point( x, y, l, ul, u ){
 		var self = this;
 
 		// base location
 		this.x = x;
 		this.y = y;
-		
+
 		// neighbors
 		this.ptUp = u;
 		this.ptUpLeft = ul;
 		this.ptLeft = l;
-		
+
 		// current location
 		this.curX = 0;
 		this.curY = 0;
@@ -48,7 +48,7 @@
 		this.yspeed = 0;
 
 		this.displaceAmount = 0;
-		
+
 		this.recalcDisplacement = function() {
 			// calculate displacement based on mouse distance from point base
 			var xdiff = self.x - mouseX;
@@ -66,11 +66,11 @@
 			self.yspeed = ((self.targetY-self.curY)*accel+self.yspeed)*fric;
 			self.curX += self.xspeed;
 			self.curY += self.yspeed;
-			
+
 			self.displaceAmount = Math.abs(self.curX - self.x) + Math.abs(self.curY - self.y);
 			self.displaceDir = (self.curX - self.x) + (self.curY - self.y);
 		};
-		
+
 		this.getTriangleDisplacement = function(tri){
 			var displace = self.displaceAmount;
 			if( this.ptUp != null ){
@@ -80,7 +80,7 @@
 			}
 			return displace;
 		};
-		
+
 		this.getTriangleDisplacementDir = function(tri){
 			var displace = self.displaceDir;
 			if( this.ptUp != null ){
@@ -91,7 +91,7 @@
 			return displace;
 		};
 	}
-	
+
 	var points = [];
 	var numPoints;
 
@@ -108,7 +108,7 @@
 		numPoints = points.length;
 	}
 	createPoints();
-	
+
 	function draw(){
 		context.clearRect( 0, 0, width, height );
 
@@ -116,11 +116,11 @@
 		context.fillStyle = 'rgba(0,0,255,255)';
 		context.strokeStyle = '#000';
 		context.lineWidth = 1;
-			
+
 		for(var i=0; i < cols; i++) {
 			for(var j=0; j < rows; j++) {
 				points[i][j].recalcDisplacement();
-				
+
 				for(var k=0; k < 2; k++) {
 					var triangleDisplaceTotal = points[i][j].getTriangleDisplacement(k);
 					var triangleDisplaceDir = points[i][j].getTriangleDisplacementDir(k);
@@ -148,29 +148,45 @@
 					context.fill();
 
 				}
-				
+
 				if(drawNumbers) {
 					context.fillStyle = 'rgba(0,0,0,1)';
 					context.fillText(''+i, points[i].curX, points[i].curY);
-				} 
-				
+				}
+
 			}
 		}
-		
-		
-		
-		setTimeout(function(){ draw(); },30);
+
+
+
+		requestAnimationFrame(draw);
 	}
-	setTimeout(function(){ draw(); },30);
-	
-	canvas.addEventListener('mousemove',onMouseMoved,false);
+	draw();
+
+	// mouse/touch tracking ---------------------------------------------------------------------------
 	var mouseX = 0;
 	var mouseY = 0;
-	function onMouseMoved(e){
-		mouseX = e.clientX;
-		mouseY = e.clientY;
+	function mouseMoved(e) {
+		mouseX = (e.touches) ? e.touches[0].clientX : e.clientX;
+		mouseY = (e.touches) ? e.touches[0].clientY : e.clientY;
 	}
-	
+	canvas.addEventListener( 'mousemove', mouseMoved, false );
+	canvas.addEventListener( 'touchmove', mouseMoved, false );
+
+	// lock screen for scrolling on mouse/touch of interactive scene
+	var lockTouchScreen = function( isLocked ) {
+		( isLocked == false ) ? document.ontouchmove = null : document.ontouchmove = function(e) { e.preventDefault(); };
+	};
+
+	canvas.addEventListener( 'touchstart', function(e){
+		lockTouchScreen(true);
+	}, false );
+
+	canvas.addEventListener( 'touchend', function(e){
+		lockTouchScreen(false);
+	}, false );
+
+
 	function handleKeyPress(evt) {
 		if(evt.keyCode == 78) drawNumbers = !drawNumbers;
 		if(evt.keyCode == 76) drawLines = !drawLines;
