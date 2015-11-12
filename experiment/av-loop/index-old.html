@@ -1,0 +1,186 @@
+<html>
+  <head>
+    <title>AV Loop</title>
+    <meta property="og:site_name" content="HTML Experiments by CacheFlowe"/>
+    <meta property="og:title" content="AV Loop"/>
+    <style>
+      html, body {
+        background: #000;
+        margin: 0px;
+        padding: 0px;
+        overflow: hidden;
+        text-align: center;
+      }
+      canvas {
+        background: black;
+        max-width: 100%;
+      }
+      #debug {
+        color: white;
+        text-align: left;
+        position: absolute;
+        top: 0;
+        left: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="debug"></div>
+    <!-- <audio src="my-recording-2-loop-normalized.wav" loop autoplay></video> -->
+    <!-- <video src="render-2015-11-10-08-46-20-with-sound.mov" loop autoplay></video> -->
+    <canvas id="draw-canvas" width="400" height="400"></canvas>
+    <script>
+      var debug = document.getElementById('debug');
+      var startTime = 0;
+      var audioTimeOffset = 0.1; // helps with the visual timing
+      var ticks = 64;
+      var tickTime = 0;
+      var lastTick = 0;
+
+      // perfect webaudio looping from: http://stackoverflow.com/questions/29882907/how-to-seamlessly-loop-sound-with-web-audio-api
+      var url = 'my-recording-2-loop-normalized.wav';
+      // var url = 'data:audio/wav;base64,';
+      var context = new AudioContext();
+      var source = context.createBufferSource();
+      source.connect(context.destination);
+
+      var request = new XMLHttpRequest();
+      request.open('GET', url, true);
+      request.responseType = 'arraybuffer';
+      request.onload = function() {
+        context.decodeAudioData(request.response, function(response) {
+          source.buffer = response;
+          source.start(0);
+          source.loop = true;
+          console.log('playing:');
+          console.log('source.buffer.duration', source.buffer.duration);
+          console.log('context.currentTime', context.currentTime);
+          startTime = context.currentTime;
+          tickTime = source.buffer.duration / ticks;
+        }, function () { console.error('The request failed.'); } );
+      }
+      request.send();
+
+      // setup draw canvas
+      var canvasDraw = document.getElementById('draw-canvas');
+      canvasDraw.width = window.innerWidth;
+      canvasDraw.height = window.innerHeight;
+      var ctx = canvasDraw.getContext('2d');
+
+      // stupid simple particle object
+      function Particle() {
+        var _x = 0,
+            _y = 0,
+            _size = 0,
+            _color = '';
+        return {
+          reset: function(x, y, size, color){
+            _x = x;
+            _y = y;
+            _size = size;
+            _color = color;
+          },
+          active: function(){
+            return _size > 0.001;
+          },
+          update: function(){
+            _size *= 0.99;
+            _x -= 1;
+            if(_x < 0) _x = ctx.canvas.width;
+            ctx.fillStyle = _color;
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(_x, _y, _size, 0, 2*Math.PI);
+            // ctx.rect(_x - _size/2, _y - _size/2, _size, _size);
+            ctx.fill();
+            ctx.restore();
+          }
+        };
+      }
+      var particles = [];
+
+
+      function newParticle(newX, newY, color) {
+        var foundParticle = false;
+        for(var i=0; i < particles.length; i++) {
+          if(particles[i].active() == false) {
+            foundParticle = true;
+            return particles[i];
+            break;
+          }
+        }
+        if(foundParticle == false) {
+          var newParticle = new Particle();
+          particles.push(newParticle);
+          return newParticle;
+        }
+      }
+
+
+      function animate() {
+        requestAnimationFrame(animate);
+        if(source.buffer) {
+          // calculate audio timing
+          var playbackTime = (context.currentTime - startTime) % source.buffer.duration + audioTimeOffset;
+          var curTick = Math.floor(playbackTime / tickTime) % ticks;
+          debug.innerHTML =
+            'context.currentTime = ' + playbackTime + '<br>' +
+            'tick = ' + curTick;
+
+
+          // draw fading overlay
+          ctx.beginPath();
+          ctx.fillStyle = "rgba(0,0,0,0.1)";
+          ctx.rect(0, 0, canvasDraw.width, canvasDraw.height);
+          ctx.fill();
+
+          // update active particles
+          for(var i=0; i < particles.length; i++) {
+            if(particles[i].active() == true) {
+              particles[i].update();
+            }
+          }
+
+          // find a dead particle, or add a new one
+          var newX = ((ctx.canvas.width / ticks) * (curTick * 2)) % ctx.canvas.width;
+
+          if(curTick != lastTick) {
+            // random particles
+            // newParticle().reset(newX, ctx.canvas.height * Math.random(), 2, 'rgba(255,255,255,0.3)');
+            // hats
+            if(curTick % 4 == 2) {
+              newParticle().reset(newX, ctx.canvas.height * 0.2, 30, 'rgba(255,255,255,1)');
+            }
+            // smashes
+            if(curTick <= 5) {
+              newParticle().reset(newX, ctx.canvas.height * 0.6, 50, 'rgba(100,200,150,1)');
+            }
+            // snare
+            if(curTick % 8 == 4) {
+              // full flash
+              ctx.beginPath();
+              ctx.fillStyle = "rgba(255,255,255,0.2)";
+              ctx.rect(0, 0, canvasDraw.width, canvasDraw.height);
+              ctx.fill();
+              // line
+              newParticle().reset(newX, ctx.canvas.height * 0.4, 70, 'rgba(190,200,250,1)');
+            }
+            // kick
+            if(curTick % 32 == 0 || curTick % 32 == 5 || curTick % 32 == 7 || curTick % 32 == 8 || curTick % 32 == 21 || curTick % 32 == 23) {  // repeats for both measures, hence % 32 for 64 ticks
+              // full flash
+              ctx.beginPath();
+              ctx.fillStyle = "rgba(0,0,0,0.3)";
+              ctx.rect(0, 0, canvasDraw.width, canvasDraw.height);
+              ctx.fill();
+              // line
+              newParticle().reset(newX, ctx.canvas.height * 0.8, 70, 'rgba(190,200,250,1)');
+            }
+          }
+
+          lastTick = curTick;
+        }
+      }
+      requestAnimationFrame(animate);
+    </script>
+  </body>
+</html>
