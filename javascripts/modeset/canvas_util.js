@@ -126,6 +126,14 @@ CanvasUtil.drawArc = function( ctx, x, y, radius, startAngle, endAngle ) {
   ctx.restore();
 };
 
+CanvasUtil.getImageDataForContext = function( context ) {
+  return context.getImageData( 0, 0, context.canvas.width, context.canvas.height ).data
+};
+
+CanvasUtil.getPixelFromImageData = function( imageData, contextWidth, x, y ) {
+  var rIndex = (y * contextWidth + x) * 4;
+  return [imageData[rIndex], imageData[rIndex+1], imageData[rIndex+2]];
+}
 
 CanvasUtil.getPixelColorFromContext = function( context, x, y ) {
   var pixelData = context.getImageData( x, y, 1, 1 ).data;
@@ -167,32 +175,32 @@ CanvasUtil.loadImageToContext = function( imagePath, callback ) {
 
 CanvasUtil.loadImageToContextFromInput = function( inputEl, callback ) {
   inputEl.addEventListener('change', function(e){
-    callback( inputEl.files ); 
-    e.stopPropagation();  
-    e.preventDefault();   
+    callback( inputEl.files );
+    e.stopPropagation();
+    e.preventDefault();
   });
 };
 
 CanvasUtil.loadImageToContextFromDrop = function( dropEl, callback ) {
   dropEl.addEventListener('dragenter', function(e){
-    e.stopPropagation();  
-    e.preventDefault();  
-    dropEl.classList.add('drop-over'); 
+    e.stopPropagation();
+    e.preventDefault();
+    dropEl.classList.add('drop-over');
   });
   dropEl.addEventListener('dragover', function(e){
-    e.stopPropagation();  
-    e.preventDefault();  
+    e.stopPropagation();
+    e.preventDefault();
   });
   dropEl.addEventListener('dragleave', function(e){
-    e.stopPropagation();  
-    e.preventDefault();  
-    dropEl.classList.remove('drop-over'); 
+    e.stopPropagation();
+    e.preventDefault();
+    dropEl.classList.remove('drop-over');
   });
   dropEl.addEventListener('drop', function(e){
-    e.stopPropagation();  
-    e.preventDefault();   
-    callback( e.target.files || e.dataTransfer.files ); 
-    dropEl.classList.remove('drop-over'); 
+    e.stopPropagation();
+    e.preventDefault();
+    callback( e.target.files || e.dataTransfer.files );
+    dropEl.classList.remove('drop-over');
   }, false);
 };
 
