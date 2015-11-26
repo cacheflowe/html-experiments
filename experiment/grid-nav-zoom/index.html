@@ -1,0 +1,357 @@
+<html>
+  <head>
+    
+    <title>CacheFlowe | Grid Nav Zoom</title>
+    <meta charset="utf-8">
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
+    <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible" />
+    <meta content="no" name="imagetoolbar" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="keywords" content="Grid Nav Zoom" />
+    <meta name="description" content="Grid Nav Zoom" />
+    <meta name="author" content="CacheFlowe" />
+    <meta name="copyright" content="CacheFlowe" />
+
+    <meta property="og:site_name" content="CacheFlowe's HTML Experiments"/>
+    <meta property="og:title" content="CacheFlowe | Grid Nav Zoom"/>
+    <meta property="og:description" content="Grid Nav Zoom"/>
+    <meta property="og:type" content="website"/>
+    <meta property="og:image" content="http://cacheflowe.com/images/cacheflowe-logo.png"/>
+
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:site" content="@cacheflowe">
+    <meta name="twitter:title" content="CacheFlowe | Grid Nav Zoom">
+    <meta name="twitter:description" content="description">
+    <meta name="twitter:image:src" content="http://cacheflowe.com/images/cacheflowe-logo.png">
+    <meta name="twitter:domain" content="http://cacheflowe.com">
+
+    <link rel="stylesheet" href="../../stylesheets/normalize.css" type="text/css" />
+    <link rel="stylesheet" href="../../stylesheets/skeleton.css" type="text/css" />
+    <link rel="stylesheet" href="../../stylesheets/experiments.css" type="text/css" />
+      <style>
+  html, body {
+    background: #ccc;
+    margin: 0px;
+    padding: 0px;
+    text-align: center;
+  }
+
+  .grid-nav {
+    position: relative;
+    background-color: #fff;
+  }
+  .nav-group {
+    position: absolute;
+    left: 0;
+    top: 0;
+    transform: scale(1);
+    opacity: 1;
+
+    /*transform-origin: left top;*/
+  }
+  .nav-group.hidden {
+    transform: scale(0);
+    opacity: 0;
+  }
+  .nav-group.animate {
+    transition: all 0.5s ease;
+  }
+  .nav-group.hiding-stacked {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  .nav-group.hiding-removed {
+    opacity: 0;
+    transform: scale(1.4);
+    pointer-events: none;
+  }
+
+  .row {
+    margin-bottom: 40px;
+  }
+  .row button {
+    border: 0;
+    background: transparent;
+    margin: 0;
+    padding: 0;
+    height: auto;
+  }
+  .columns {
+    background-color: #333;
+    padding: 1px;
+    box-shadow: 0px 0px 7px rgba(0,0,0,0.3);
+  }
+  .columns img {
+    width: 100%;
+  }
+
+</style>
+  </head>
+  <body>
+    <header>
+  <h1>Grid Nav Zoom</h1>
+</header>
+<div class="container">
+  <h4><button id="back" style="margin-right: 20px;">&lt;</button><span id="breadcrumb">Main</span></h4>
+  <div class="grid-nav">
+    <div data-nav-title="Main" class="nav-group active">
+      <div class="row">
+        <div class="four columns"><button data-submenu-id="two"><img src="./images/nav-category.png"></button></div>
+        <div class="four columns"><button data-submenu-id="two"><img src="./images/nav-videos.png"></button></div>
+        <div class="four columns"><button data-submenu-id="two"><img src="./images/nav-category.png"></button></div>
+      </div>
+      <div class="row">
+        <div class="four columns"><button data-submenu-id="two"><img src="./images/nav-videos.png"></button></div>
+        <div class="four columns"><button data-submenu-id="two"><img src="./images/nav-videos.png"></button></div>
+        <div class="four columns"><button data-submenu-id="two"><img src="./images/nav-category.png"></button></div>
+      </div>
+      <div class="row">
+        <div class="four columns"><button data-submenu-id="two"><img src="./images/nav-videos.png"></button></div>
+        <div class="four columns"><button data-submenu-id="two"><img src="./images/nav-videos.png"></button></div>
+        <div class="four columns"><button data-submenu-id="two"><img src="./images/nav-category.png"></button></div>
+      </div>
+    </div>
+
+    <div data-nav-id="two" data-nav-title="Two" class="nav-group two hidden">
+      <div class="row">
+        <div class="four columns"><button data-submenu-id="three"><img src="./images/nav-category.png"></button></div>
+        <div class="four columns"><button data-submenu-id="three"><img src="./images/nav-videos.png"></button></div>
+        <div class="four columns"><button data-submenu-id="three"><img src="./images/nav-category.png"></button></div>
+      </div>
+      <div class="row">
+        <div class="four columns"><button data-submenu-id="three"><img src="./images/nav-videos.png"></button></div>
+        <div class="four columns"><button data-submenu-id="three"><img src="./images/nav-videos.png"></button></div>
+        <div class="four columns"><button data-submenu-id="three"><img src="./images/nav-category.png"></button></div>
+      </div>
+    </div>
+
+    <div data-nav-id="three" data-nav-title="Three" class="nav-group three hidden">
+      <div class="row">
+        <div class="four columns"><button><img src="./images/nav-category.png"></button></div>
+        <div class="four columns"><button><img src="./images/nav-videos.png"></button></div>
+        <div class="four columns"><button><img src="./images/nav-category.png"></button></div>
+      </div>
+      <div class="row">
+        <div class="four columns"><button><img src="./images/nav-videos.png"></button></div>
+        <div class="four columns"><button><img src="./images/nav-videos.png"></button></div>
+        <div class="four columns"><button><img src="./images/nav-category.png"></button></div>
+      </div>
+      <div class="row">
+        <div class="four columns"><button><img src="./images/nav-videos.png"></button></div>
+        <div class="four columns"><button><img src="./images/nav-videos.png"></button></div>
+        <div class="four columns"><button><img src="./images/nav-category.png"></button></div>
+      </div>
+    </div>
+  </div>
+</div>
+    <script>
+      (function(){
+
+  var _x = -1,
+      _y = -1;
+
+  var reset = function() {
+    _x = -1;
+    _y = -1;
+  };
+
+  /////////////////////////////////////////////////////////////
+  // PUBLIC
+  /////////////////////////////////////////////////////////////
+
+  var pointerPos = {};
+  window.pointerPos = pointerPos;
+
+  window.pointerPos.x = function(el) {
+    if(el != null) {
+      var offset = el.getBoundingClientRect();
+      return _x - offset.left;
+    }
+    return _x;
+  };
+
+  window.pointerPos.y = function(el) {
+    if(el != null) {
+      var offset = el.getBoundingClientRect();
+      return _y - offset.top;
+    }
+    return _y;
+  };
+
+  window.pointerPos.xPercent = function(el) {
+    if(el != null) {
+      var offset = el.getBoundingClientRect();
+      var relativeX = _x - offset.left;
+      return relativeX / offset.width;
+    }
+    return _x / window.innerWidth;
+  };
+
+  window.pointerPos.yPercent = function(el) {
+    if(el != null) {
+      var offset = el.getBoundingClientRect();
+      var relativeY = _y - offset.top;
+      return relativeY / offset.height;
+    }
+    return _y / window.innerHeight;
+  };
+
+  /////////////////////////////////////////////////////////////
+  // Move listener
+  /////////////////////////////////////////////////////////////
+
+  var mouseX = 0;
+	var mouseY = 0;
+	function pointerMoved(x, y) {
+		_x = x;
+		_y = y;
+	}
+
+  document.addEventListener('mousedown', function(e) {
+    pointerMoved(e.clientX, e.clientY);
+  });
+  document.addEventListener('mousemove', function(e) {
+    pointerMoved(e.clientX, e.clientY);
+  });
+
+  document.addEventListener('touchstart', function(e) {
+    pointerMoved(e.touches[0].clientX, e.touches[0].clientY);
+  });
+  document.addEventListener('touchmove', function(e) {
+    pointerMoved(e.touches[0].clientX, e.touches[0].clientY);
+  });
+
+})();
+      /////////////////
+// util
+/////////////////
+var closest = function(element, tagname) {
+  tagname = tagname.toLowerCase();
+  while (true) {
+    if (element.nodeName.toLowerCase() === tagname) {
+      return element;
+    }
+    if (!(element = element.parentNode)) {
+      break;
+    }
+  }
+  return null;
+};
+
+var remove = function(el) {
+  if(el && el.parentNode) el.parentNode.removeChild(el);
+}
+
+
+/////////////////
+// grid nav
+/////////////////
+
+var initialNav = document.querySelector('.nav-group.active');
+var navStack = [initialNav];
+var breadcrumb = document.querySelector('#breadcrumb');
+
+
+var getActiveNavGroup = function() {
+  return navStack[navStack.length - 1];
+};
+
+var getPreviousNavGroup = function() {
+  if(navStack.length > 1)
+    return navStack[navStack.length - 2];
+  else
+    return null;
+};
+
+var getNav = function(navId) {
+  var navEl = document.querySelector('[data-nav-id="'+navId+'"]');
+  return navEl;
+};
+
+var popBreadcrumb = function() {
+  var curBreadcrumbArr = breadcrumb.innerHTML.split(' / ');
+  curBreadcrumbArr.pop();
+  breadcrumb.innerHTML = curBreadcrumbArr.join(' / ');
+};
+
+var addToBreadcrumb = function(title) {
+  var curBreadcrumbArr = breadcrumb.innerHTML.split(' / ');
+  curBreadcrumbArr.push(title);
+  breadcrumb.innerHTML = curBreadcrumbArr.join(' / ');
+};
+
+
+var showNavFromClick = function(clickedEl, navToShow) {
+  var activeNav = getActiveNavGroup();
+  var activeNavRect = activeNav.getBoundingClientRect();
+  var clickedRect = clickedEl.getBoundingClientRect();
+  var positionStyle = '';
+  positionStyle += 'left:' + Math.round(clickedRect.left - activeNavRect.left) + 'px; ';
+  positionStyle += 'top:' + Math.round(clickedRect.top - activeNavRect.top) + 'px; ';
+  positionStyle += 'width:' + Math.round(clickedRect.width) + 'px; ';
+  navToShow.setAttribute('style', positionStyle);
+
+  setTimeout(function(){
+    navToShow.classList.add('animate');
+    navToShow.classList.remove('hidden');
+  }, 30);
+
+  activeNav.classList.add('animate');
+  setTimeout(function(){
+    activeNav.classList.add('hiding-stacked');
+    // var positionStyle = 'transform-origin: '+ (pointerPos.xPercent(activeNav) * 100) +'% '+ (pointerPos.yPercent(activeNav) * 100) +'%;';
+    // var positionStyle = 'transform-origin: top left;';
+    // positionStyle += 'left:' + Math.round(activeNavRect.left - clickedRect.left) + 'px; ';
+    // positionStyle += 'top:' + Math.round(activeNavRect.top - clickedRect.top) + 'px; ';
+    // activeNav.setAttribute('style', positionStyle);
+
+
+    var positionStyle = '';
+    positionStyle += 'left: 0px; ';
+    positionStyle += 'top: 0px; ';
+    positionStyle += 'width:' + activeNavRect.width + 'px; ';
+    navToShow.setAttribute('style', positionStyle);
+  }, 80);
+
+  setTimeout(function(){
+    navToShow.removeAttribute('style');
+  }, 600);
+
+};
+
+document.querySelector('.container').addEventListener('click', function(e) {
+  var clickedItem = closest(e.target, 'button');
+  if(clickedItem) {
+    var nextMenuId = clickedItem.getAttribute('data-submenu-id');
+    if(nextMenuId) {
+      var newNav = getNav(nextMenuId);
+      if(newNav) {
+        var newNavTitle = newNav.getAttribute('data-nav-title');
+        addToBreadcrumb(newNavTitle);
+        showNavFromClick(clickedItem, newNav);
+        navStack.push(newNav);
+      }
+    }
+  }
+});
+
+document.querySelector('#back').addEventListener('click', function(e) {
+  var prevNav = getPreviousNavGroup()
+  if(prevNav) {
+    prevNav.classList.remove('hiding-stacked');
+
+    var activeNav = getActiveNavGroup();
+    activeNav.classList.add('hiding-removed');
+    navStack.pop();
+    popBreadcrumb();
+    setTimeout(function(){
+      activeNav.classList.remove('hiding-removed');
+      activeNav.classList.remove('animate');
+      activeNav.classList.add('hidden');
+      activeNav.removeAttribute('style');
+    }, 600);
+  }
+});
+    </script>
+  </body>
+</html>

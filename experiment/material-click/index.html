@@ -1,0 +1,146 @@
+<html>
+  <head>
+    
+    <title>CacheFlowe | Material Click</title>
+    <meta charset="utf-8">
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
+    <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible" />
+    <meta content="no" name="imagetoolbar" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="keywords" content="Material Click" />
+    <meta name="description" content="Material Click" />
+    <meta name="author" content="CacheFlowe" />
+    <meta name="copyright" content="CacheFlowe" />
+
+    <meta property="og:site_name" content="CacheFlowe's HTML Experiments"/>
+    <meta property="og:title" content="CacheFlowe | Material Click"/>
+    <meta property="og:description" content="Material Click"/>
+    <meta property="og:type" content="website"/>
+    <meta property="og:image" content="http://cacheflowe.com/images/cacheflowe-logo.png"/>
+
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:site" content="@cacheflowe">
+    <meta name="twitter:title" content="CacheFlowe | Material Click">
+    <meta name="twitter:description" content="description">
+    <meta name="twitter:image:src" content="http://cacheflowe.com/images/cacheflowe-logo.png">
+    <meta name="twitter:domain" content="http://cacheflowe.com">
+
+    <link rel="stylesheet" href="../../stylesheets/normalize.css" type="text/css" />
+    <link rel="stylesheet" href="../../stylesheets/skeleton.css" type="text/css" />
+    <link rel="stylesheet" href="../../stylesheets/experiments.css" type="text/css" />
+  
+    <style>
+      .row {
+        margin-bottom: 40px;
+      }
+      .columns {
+        background-color: #333;
+        padding: 100px 0;
+
+      }
+      .overlay-rect {
+        position: absolute;
+        overflow: hidden;
+        transition: opacity 0.15s linear 0.15s;
+        opacity: 1;
+        pointer-events: none;
+      }
+      .overlay-rect.away {
+        opacity: 0;
+      }
+      .click-target {
+        position: absolute;
+        transition: transform 0.3s linear, background-color 0.3s linear;
+        width: 30px;
+        height: 30px;
+        border-radius: 15px;
+        margin-left: -15px;
+        margin-top: -15px;
+        background-color: rgba(255, 255, 255, 0.4);
+        transform: scale(1);
+      }
+      .click-target.away {
+        background-color: rgba(255, 255, 255, 0.2);
+        transform: scale(20);
+      }
+
+    </style>
+  </head>
+  <body>
+    <header>
+  		<h1>Material Click</h1>
+  	</header>
+    <div class="container">
+      <div class="row">
+        <div class="four columns"></div>
+        <div class="four columns"></div>
+        <div class="four columns"></div>
+      </div>
+      <div class="row">
+        <div class="four columns"></div>
+        <div class="four columns"></div>
+        <div class="four columns"></div>
+      </div>
+
+    </div>
+    <script src="../../javascripts/modeset/pointer-pos.js"></script>
+    <script>
+      var closest = function(element, selector) {
+        selector = selector.toLowerCase();
+        var className = (selector.split('.').length > 1) ? selector.split('.')[1] : '';
+        selector = selector.split('.')[0];
+        while (true) {
+          if (element.nodeName.toLowerCase() === selector && element.className.indexOf(className) != -1) {
+            return element;
+          }
+          if (!(element = element.parentNode)) {
+            break;
+          }
+        }
+        return null;
+      };
+
+      var coverElWithEl = function(elToCover) {
+        var elRect = elToCover.getBoundingClientRect();
+        var newEl = document.createElement('div');
+        newEl.className = 'overlay-rect';
+        var positionStyle = '';
+        positionStyle += 'top:' + Math.round(elRect.top + window.scrollY) + 'px; ';
+        positionStyle += 'left:' + Math.round(elRect.left) + 'px; ';
+        positionStyle += 'width:' + Math.round(elRect.width) + 'px; ';
+        positionStyle += 'height:' + Math.round(elRect.height) + 'px; ';
+        newEl.setAttribute('style', positionStyle);
+        document.body.appendChild(newEl);
+        return newEl;
+      }
+
+      var showClickInEl = function(elClickHolder) {
+        var newEl = document.createElement('div');
+        newEl.className = 'click-target';
+        var positionStyle = '';
+        positionStyle += 'top:' + pointerPos.y(elClickHolder) + 'px; ';
+        positionStyle += 'left:' + pointerPos.x(elClickHolder) + 'px; ';
+        newEl.setAttribute('style', positionStyle);
+        elClickHolder.appendChild(newEl);
+
+        setTimeout(function(){
+          newEl.classList.add('away');
+        }, 40);
+      }
+
+      document.querySelector('.container').addEventListener('click', function(e) {
+        var gridEl = closest(e.target, 'div.four');
+        if(gridEl) {
+          var overlayEl = coverElWithEl(gridEl);
+          setTimeout(function(){
+            overlayEl.classList.add('away');
+            showClickInEl(overlayEl);
+          }, 10);
+          setTimeout(function(){
+            overlayEl.parentNode.removeChild(overlayEl);
+          }, 650);
+        }
+      });
+    </script>
+  </body>
+</html>

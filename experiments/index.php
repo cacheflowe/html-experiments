@@ -1,1 +1,1 @@
-<?php include '../lib/_list.php'; ?>
+<?php include '../php/_list.php'; ?>

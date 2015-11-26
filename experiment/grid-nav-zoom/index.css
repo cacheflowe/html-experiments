@@ -1,0 +1,58 @@
+<style>
+  html, body {
+    background: #ccc;
+    margin: 0px;
+    padding: 0px;
+    text-align: center;
+  }
+
+  .grid-nav {
+    position: relative;
+    background-color: #fff;
+  }
+  .nav-group {
+    position: absolute;
+    left: 0;
+    top: 0;
+    transform: scale(1);
+    opacity: 1;
+
+    /*transform-origin: left top;*/
+  }
+  .nav-group.hidden {
+    transform: scale(0);
+    opacity: 0;
+  }
+  .nav-group.animate {
+    transition: all 0.5s ease;
+  }
+  .nav-group.hiding-stacked {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  .nav-group.hiding-removed {
+    opacity: 0;
+    transform: scale(1.4);
+    pointer-events: none;
+  }
+
+  .row {
+    margin-bottom: 40px;
+  }
+  .row button {
+    border: 0;
+    background: transparent;
+    margin: 0;
+    padding: 0;
+    height: auto;
+  }
+  .columns {
+    background-color: #333;
+    padding: 1px;
+    box-shadow: 0px 0px 7px rgba(0,0,0,0.3);
+  }
+  .columns img {
+    width: 100%;
+  }
+
+</style>

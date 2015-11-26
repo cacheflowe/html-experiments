@@ -1,15 +1,22 @@
+<?php ob_start(); ?>
 <html>
 <head>
-	<title>mandelbrot</title>
+	<?php include('../../php/head.php'); writeHead('ASCII Mandlebrot', 'ASCII Mandlebrot', null); ?>
 	<style>
 		body {
-			line-height: 40%;
+			line-height: 0.46;
+			text-align: center;
 		}
 	</style>
 </head>
 
 <body>
-	<pre id="draw"></pre>
+	<header>
+		<h1>ASCII Mandlebrot</h1>
+	</header>
+	<div class="container">
+		<pre id="draw"></pre>
+	</div>
 	<script>
 		var el = document.getElementById('draw');
 		var str = '';
@@ -24,7 +31,7 @@
 
 		// ported from c++: http://www.cygnus-software.com/theory/theory.htm
 		var MaxIters =  100
-		var SIZE =      300
+		var SIZE =      400
 		var LEFT =      -2.0
 		var RIGHT =     1.0
 		var TOP =       1.0
@@ -72,7 +79,9 @@
 		    el.innerHTML = str;
 		}
 
-		setInterval(function(){
+		function animate() {
+			requestAnimationFrame(animate);
+
 			str = '';
 
 			inc += 0.01;
@@ -82,7 +91,9 @@
 			rightAdd = 1 + Math.sin(inc) * 1;
 
 			draw();
-		},33);
+		}
+		requestAnimationFrame(animate);
 	</script>
 </body>
 </html>
+<?php file_put_contents('./index.html', ob_get_contents()); ob_end_flush(); ?>

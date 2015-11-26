@@ -1,0 +1,94 @@
+<html>
+  <head>
+    
+    <title>CacheFlowe | Cursor Attention</title>
+    <meta charset="utf-8">
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
+    <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible" />
+    <meta content="no" name="imagetoolbar" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="keywords" content="Cursor Attention" />
+    <meta name="description" content="Cursor Attention" />
+    <meta name="author" content="CacheFlowe" />
+    <meta name="copyright" content="CacheFlowe" />
+
+    <meta property="og:site_name" content="CacheFlowe's HTML Experiments"/>
+    <meta property="og:title" content="CacheFlowe | Cursor Attention"/>
+    <meta property="og:description" content="Cursor Attention"/>
+    <meta property="og:type" content="website"/>
+    <meta property="og:image" content="./preview.gif"/>
+
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:site" content="@cacheflowe">
+    <meta name="twitter:title" content="CacheFlowe | Cursor Attention">
+    <meta name="twitter:description" content="description">
+    <meta name="twitter:image:src" content="./preview.gif">
+    <meta name="twitter:domain" content="http://cacheflowe.com">
+
+    <link rel="stylesheet" href="../../stylesheets/normalize.css" type="text/css" />
+    <link rel="stylesheet" href="../../stylesheets/skeleton.css" type="text/css" />
+    <link rel="stylesheet" href="../../stylesheets/experiments.css" type="text/css" />
+  
+    <style>
+      html, body, .container {
+        width: 100%;
+        height: 100%;
+      }
+      .circle {
+        transition: all 0.4s cubic-bezier(0.455, 0.030, 0.515, 0.955);
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 50px;
+        height: 50px;
+        margin-top: -25px;
+        margin-left: -25px;
+        border-radius: 25px;
+        background-color: #000;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+  		<h1>Cursor Attention</h1>
+  	</header>
+    <div class="container">
+      <div class="circle"></div>
+    </div>
+    <script src="../../javascripts/modeset/pointer-pos.js"></script>
+    <script>
+      var getRadiansToTarget = function( x1, y1, x2, y2 ) {
+        return ((Math.PI*2) + (Math.PI/2) + Math.atan2( x1 - x2, y1 - y2 )) % (Math.PI*2); // hideous normalization. fix this.
+      };
+
+      var cursors = ['w-resize', 'sw-resize', 's-resize', 'se-resize', 'e-resize', 'ne-resize', 'n-resize', 'nw-resize'];
+
+      var pointAtEl = function(el) {
+        // calculate radians relative to element's center and map rotation to the cursor index: https://en.wikipedia.org/wiki/Radian
+        var elRect = el.getBoundingClientRect();
+        var mouseRadians = getRadiansToTarget(elRect.left + elRect.width / 2, elRect.top + elRect.height / 2, window.pointerPos.x(), window.pointerPos.y());
+
+        var fortyFive = Math.PI / 4;
+        var fortyFiveHalf = fortyFive / 2;
+
+        var cursorIndex = 0;
+        var curRadians = fortyFiveHalf;
+        while(mouseRadians > curRadians) {
+          cursorIndex++;
+          curRadians += fortyFive;
+        }
+        document.body.setAttribute('style', 'cursor: ' + cursors[cursorIndex % cursors.length]);
+      };
+
+      var circleEl = document.querySelector('.circle');
+      var frameCount = 1;
+
+      var animate = function() {
+        requestAnimationFrame(animate);
+        if(frameCount++ % 120 == 0) circleEl.setAttribute('style', 'top: '+ (20 + Math.random() * 60) +'%; left: '+ (20 + Math.random() * 60) +'%');
+        pointAtEl(circleEl);
+      };
+      requestAnimationFrame(animate);
+    </script>
+  </body>
+</html>

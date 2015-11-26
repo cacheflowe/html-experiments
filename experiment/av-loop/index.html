@@ -1,8 +1,35 @@
 <html>
   <head>
-    <title>AV Loop</title>
-    <meta property="og:site_name" content="HTML Experiments by CacheFlowe"/>
-    <meta property="og:title" content="AV Loop"/>
+    
+    <title>CacheFlowe | A/V Loop</title>
+    <meta charset="utf-8">
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
+    <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible" />
+    <meta content="no" name="imagetoolbar" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="keywords" content="A/V Loop" />
+    <meta name="description" content="A/V Loop" />
+    <meta name="author" content="CacheFlowe" />
+    <meta name="copyright" content="CacheFlowe" />
+
+    <meta property="og:site_name" content="CacheFlowe's HTML Experiments"/>
+    <meta property="og:title" content="CacheFlowe | A/V Loop"/>
+    <meta property="og:description" content="A/V Loop"/>
+    <meta property="og:type" content="website"/>
+    <meta property="og:image" content="http://cacheflowe.com/images/cacheflowe-logo.png"/>
+
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:site" content="@cacheflowe">
+    <meta name="twitter:title" content="CacheFlowe | A/V Loop">
+    <meta name="twitter:description" content="description">
+    <meta name="twitter:image:src" content="http://cacheflowe.com/images/cacheflowe-logo.png">
+    <meta name="twitter:domain" content="http://cacheflowe.com">
+
+    <link rel="stylesheet" href="../../stylesheets/normalize.css" type="text/css" />
+    <link rel="stylesheet" href="../../stylesheets/skeleton.css" type="text/css" />
+    <link rel="stylesheet" href="../../stylesheets/experiments.css" type="text/css" />
+  
+    <link rel="stylesheet" href="../../stylesheets/font-awesome.min.css" type="text/css" />
     <style>
       html, body {
         background: #000;
@@ -10,10 +37,27 @@
         padding: 0px;
         overflow: hidden;
         text-align: center;
+        top: 0;
+        left: 0;
       }
       canvas {
         background: black;
         max-width: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+      }
+      button.play {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        margin-left: -19px;
+        margin-top: -19px;
+        color: #fff;
+        border: 0;
+        background: transparent;
+        font-size: 10rem;
+        z-index: 3;
       }
       #debug {
         color: white;
@@ -21,14 +65,19 @@
         position: absolute;
         top: 0;
         left: 0;
+        display: none;
       }
     </style>
   </head>
   <body>
+    <header>
+  		<h1>A/V Loop</h1>
+  	</header>
     <div id="debug"></div>
     <!-- <audio src="my-recording-2-loop-normalized.wav" loop autoplay></video> -->
     <!-- <video src="render-2015-11-10-08-46-20-with-sound.mov" loop autoplay></video> -->
     <canvas id="draw-canvas" width="400" height="400"></canvas>
+    <button class="play fa fa-play-circle fa-3"></button>
     <script>
       var debug = document.getElementById('debug');
       var startTime = 0;
@@ -40,11 +89,15 @@
 
       // perfect webaudio looping from: http://stackoverflow.com/questions/29882907/how-to-seamlessly-loop-sound-with-web-audio-api
       var url = 'my-recording-2-loop-normalized.wav';
+      var vol = 1.0;
       // var url = 'data:audio/wav;base64,';
       window.AudioContext = window.AudioContext || window.webkitAudioContext;
       var context = new AudioContext();
       var source = context.createBufferSource();
-      source.connect(context.destination);
+      var gainNode = context.createGain();
+      source.connect(gainNode);
+      gainNode.gain.value = vol;
+      gainNode.connect(context.destination);
 
       var request = new XMLHttpRequest();
       request.open('GET', url, true);
@@ -62,9 +115,11 @@
       function playAudio(){
         source.start(0);
         source.loop = true;
+        console.log(source);
         startTime = context.currentTime;
         tickTime = source.buffer.duration / ticks;
         requestAnimationFrame(animate);
+        document.querySelector('button.play').style.display = 'none';
       }
       document.addEventListener('touchend', playAudio);
       document.addEventListener('mouseup', playAudio);
@@ -94,14 +149,17 @@
             _color = color;
             _rads = Math.PI/2; // Math.PI/4 * Math.floor(Math.random() * 8)
 
+            // drop a square on the beat
             ctx.strokeStyle = _color;
             ctx.lineWidth = 3;
+            ctx.save();
             ctx.beginPath();
             size = size * 7;
-            // ctx.arc(_x, _y, size, 0, 2*Math.PI);
-            ctx.rect(_x - size/2, _y - size/2, size, size);
+            ctx.translate(_x - size/2, _y - size/2);
+            if(Math.random() > 0.3) ctx.rotate(Math.PI / 4);
+            ctx.rect(0, 0, size, size);
             ctx.stroke();
-
+            ctx.restore();
           },
           active: function(){
             return _size > 0.001;
@@ -125,8 +183,8 @@
             _xLast = _x;
             _yLast = _y;
           },
-          beat: function() {
-            if(Math.random() > 0.75) {
+          beat: function(likeliness) {
+            if(Math.random() < likeliness) {
               _rads += (Math.random() > 0.5) ? Math.PI/4 : Math.PI/-4; // Math.PI/4 * Math.floor(Math.random() * 8)
             }
           }
@@ -183,9 +241,8 @@
             // turn on the beat
             for(var i=0; i < particles.length; i++) {
               if(particles[i].active() == true) {
-                if(curTick % 4 == 2 || curTick % 8 == 4) {
-                  particles[i].beat();
-                }
+                if(curTick % 4 == 2) particles[i].beat(0.25);
+                if(curTick % 8 == 4) particles[i].beat(0.75);
               }
             }
 
@@ -211,11 +268,19 @@
             }
             // kick
             if(curTick % 32 == 0 || curTick % 32 == 5 || curTick % 32 == 7 || curTick % 32 == 8 || curTick % 32 == 21 || curTick % 32 == 23) {  // repeats for both measures, hence % 32 for 64 ticks
-              // full flash
+              // flash bar
+              var flashW = 20 + Math.random() * 100;
+              var flashH = canvasDraw.height * 3;
               ctx.beginPath();
-              ctx.fillStyle = "rgba(0,0,0,0.3)";
-              ctx.rect(0, 0, canvasDraw.width, canvasDraw.height);
-              ctx.fill();
+              ctx.save();
+              ctx.translate(newX, ctx.canvas.height * 0.8);
+              (Math.random() > 0.5) ? ctx.rotate(Math.PI / 4) : ctx.rotate(-Math.PI / 4);
+              ctx.fillStyle = ctx.strokeStyle = "rgba(235,255,235,0.3)";
+              ctx.lineWidth = 2;
+              ctx.rect(-flashW/2, -flashH/2, flashW, flashH);
+              (Math.random() > 0.5) ? ctx.fill() : ctx.stroke();
+              ctx.restore();
+
               // line
               newParticle().reset(newX, ctx.canvas.height * 0.8, 10, 'rgba(190,200,250,1)');
             }
