@@ -23,7 +23,7 @@ function writeHead($title, $description, $image) {
     <meta name="twitter:card" content="summary">
     <meta name="twitter:site" content="@cacheflowe">
     <meta name="twitter:title" content="CacheFlowe | ' . $title . '">
-    <meta name="twitter:description" content="description">
+    <meta name="twitter:description" content="' . $description . '">
     <meta name="twitter:image:src" content="' . $image . '">
     <meta name="twitter:domain" content="http://cacheflowe.com">
 

@@ -1,7 +1,7 @@
 <?php ob_start(); ?>
 <html>
   <head>
-    <?php include('../../php/head.php'); writeHead('A/V Loop', 'A/V Loop', null); ?>
+    <?php include('../../php/head.php'); writeHead('A/V Loop', 'A synchronized WebAudio audio/visual experiment', 'http://cacheflowe.com/code/web/experiment/av-loop/preview.gif'); ?>
 
     <link rel="stylesheet" href="../../stylesheets/font-awesome.min.css" type="text/css" />
     <style>
@@ -14,22 +14,21 @@
       }
       canvas {
         background: black;
-        max-width: 100%;
-        position: absolute;
-        top: 0;
-        left: 0;
       }
       button.play {
         position: absolute;
         left: 50%;
         top: 50%;
-        margin-left: -19px;
-        margin-top: -19px;
+        margin-left: -5rem;
+        margin-top: -5rem;
         color: #fff;
         border: 0;
         background: transparent;
         font-size: 10rem;
         z-index: 3;
+        width: 10rem;
+        height: 10rem;
+        padding: 0;
       }
       #debug {
         color: white;
@@ -48,9 +47,11 @@
     <div id="debug"></div>
     <!-- <audio src="my-recording-2-loop-normalized.wav" loop autoplay></video> -->
     <!-- <video src="render-2015-11-10-08-46-20-with-sound.mov" loop autoplay></video> -->
-    <canvas id="draw-canvas" width="400" height="400"></canvas>
+    <canvas id="draw-canvas" class="full-width" width="400" height="400"></canvas>
     <button class="play fa fa-play-circle fa-3"></button>
     <script>
+      document.ontouchmove = function(e) { e.preventDefault(); };
+
       var debug = document.getElementById('debug');
       var startTime = 0;
       var audioTimeOffset = 0.1; // helps with the visual timing

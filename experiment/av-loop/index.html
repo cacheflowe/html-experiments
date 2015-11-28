@@ -8,21 +8,21 @@
     <meta content="no" name="imagetoolbar" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="keywords" content="A/V Loop" />
-    <meta name="description" content="A/V Loop" />
+    <meta name="description" content="A synchronized WebAudio audio/visual experiment" />
     <meta name="author" content="CacheFlowe" />
     <meta name="copyright" content="CacheFlowe" />
 
     <meta property="og:site_name" content="CacheFlowe's HTML Experiments"/>
     <meta property="og:title" content="CacheFlowe | A/V Loop"/>
-    <meta property="og:description" content="A/V Loop"/>
+    <meta property="og:description" content="A synchronized WebAudio audio/visual experiment"/>
     <meta property="og:type" content="website"/>
-    <meta property="og:image" content="http://cacheflowe.com/images/cacheflowe-logo.png"/>
+    <meta property="og:image" content="http://cacheflowe.com/code/web/experiment/av-loop/preview.gif"/>
 
     <meta name="twitter:card" content="summary">
     <meta name="twitter:site" content="@cacheflowe">
     <meta name="twitter:title" content="CacheFlowe | A/V Loop">
-    <meta name="twitter:description" content="description">
-    <meta name="twitter:image:src" content="http://cacheflowe.com/images/cacheflowe-logo.png">
+    <meta name="twitter:description" content="A synchronized WebAudio audio/visual experiment">
+    <meta name="twitter:image:src" content="http://cacheflowe.com/code/web/experiment/av-loop/preview.gif">
     <meta name="twitter:domain" content="http://cacheflowe.com">
 
     <link rel="stylesheet" href="../../stylesheets/normalize.css" type="text/css" />
@@ -33,8 +33,6 @@
     <style>
       html, body {
         background: #000;
-        margin: 0px;
-        padding: 0px;
         overflow: hidden;
         text-align: center;
         top: 0;
@@ -42,22 +40,21 @@
       }
       canvas {
         background: black;
-        max-width: 100%;
-        position: absolute;
-        top: 0;
-        left: 0;
       }
       button.play {
         position: absolute;
         left: 50%;
         top: 50%;
-        margin-left: -19px;
-        margin-top: -19px;
+        margin-left: -5rem;
+        margin-top: -5rem;
         color: #fff;
         border: 0;
         background: transparent;
         font-size: 10rem;
         z-index: 3;
+        width: 10rem;
+        height: 10rem;
+        padding: 0;
       }
       #debug {
         color: white;
@@ -76,9 +73,11 @@
     <div id="debug"></div>
     <!-- <audio src="my-recording-2-loop-normalized.wav" loop autoplay></video> -->
     <!-- <video src="render-2015-11-10-08-46-20-with-sound.mov" loop autoplay></video> -->
-    <canvas id="draw-canvas" width="400" height="400"></canvas>
+    <canvas id="draw-canvas" class="full-width" width="400" height="400"></canvas>
     <button class="play fa fa-play-circle fa-3"></button>
     <script>
+      document.ontouchmove = function(e) { e.preventDefault(); };
+
       var debug = document.getElementById('debug');
       var startTime = 0;
       var audioTimeOffset = 0.1; // helps with the visual timing

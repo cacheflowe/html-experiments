@@ -20,7 +20,7 @@ header {
   top: 0;
   left: 0;
   width: 100%;
-  background: #333;
+  background: #000;
 }
 header h1 {
   color: #fff;
@@ -35,4 +35,11 @@ header h1 {
 
 body > .container {
   padding-top: 8rem;
+}
+
+canvas.full-width {
+  max-width: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
 }

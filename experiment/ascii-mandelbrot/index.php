@@ -1,7 +1,7 @@
 <?php ob_start(); ?>
 <html>
 <head>
-	<?php include('../../php/head.php'); writeHead('ASCII Mandlebrot', 'ASCII Mandlebrot', null); ?>
+	<?php include('../../php/head.php'); writeHead('ASCII Mandelbrot', 'ASCII Mandelbrot', null); ?>
 	<style>
 		body {
 			line-height: 0.46;
@@ -12,7 +12,7 @@
 
 <body>
 	<header>
-		<h1>ASCII Mandlebrot</h1>
+		<h1>ASCII Mandelbrot</h1>
 	</header>
 	<div class="container">
 		<pre id="draw"></pre>
