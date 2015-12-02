@@ -16,13 +16,13 @@
     <meta property="og:title" content="CacheFlowe | Plasma"/>
     <meta property="og:description" content="Plasma pixels on canvas"/>
     <meta property="og:type" content="website"/>
-    <meta property="og:image" content="http://cacheflowe.com/code/web/experiment/plasma/preview.gif"/>
+    <meta property="og:image" content="http://cacheflowe.com/code/html/experiment/plasma/preview.gif"/>
 
     <meta name="twitter:card" content="summary">
     <meta name="twitter:site" content="@cacheflowe">
     <meta name="twitter:title" content="CacheFlowe | Plasma">
     <meta name="twitter:description" content="Plasma pixels on canvas">
-    <meta name="twitter:image:src" content="http://cacheflowe.com/code/web/experiment/plasma/preview.gif">
+    <meta name="twitter:image:src" content="http://cacheflowe.com/code/html/experiment/plasma/preview.gif">
     <meta name="twitter:domain" content="http://cacheflowe.com">
 
     <link rel="stylesheet" href="../../stylesheets/normalize.css" type="text/css" />
@@ -111,8 +111,9 @@
 			/* PLASMA CLASS ------------------------------ */
 
 			var Plasma = function() {
-					this.COLS = 50;
-					this.ROWS = 30;
+					var size = 30;
+					this.COLS = Math.ceil(window.innerWidth / size);
+					this.ROWS =  Math.ceil(window.innerHeight / size);
 					this.CANVAS_W = window.innerWidth;
 					this.CANVAS_H = window.innerHeight;
 					this.FPS = 1000/30;

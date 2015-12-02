@@ -1,7 +1,7 @@
 <?php ob_start(); ?>
 <html>
 <head>
-	<?php include('../../php/head.php'); writeHead('Plasma', 'Plasma pixels on canvas', 'http://cacheflowe.com/code/web/experiment/plasma/preview.gif'); ?>
+	<?php include('../../php/head.php'); writeHead('Plasma', 'Plasma pixels on canvas', 'http://cacheflowe.com/code/html/experiment/plasma/preview.gif'); ?>
 </head>
 
 <body>
@@ -85,8 +85,9 @@
 			/* PLASMA CLASS ------------------------------ */
 
 			var Plasma = function() {
-					this.COLS = 50;
-					this.ROWS = 30;
+					var size = 30;
+					this.COLS = Math.ceil(window.innerWidth / size);
+					this.ROWS =  Math.ceil(window.innerHeight / size);
 					this.CANVAS_W = window.innerWidth;
 					this.CANVAS_H = window.innerHeight;
 					this.FPS = 1000/30;

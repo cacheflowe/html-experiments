@@ -1,7 +1,7 @@
 <?php ob_start(); ?>
 <html>
   <head>
-    <?php include('../../php/head.php'); writeHead('A/V Loop', 'A synchronized WebAudio audio/visual experiment', 'http://cacheflowe.com/code/web/experiment/av-loop/preview.gif'); ?>
+    <?php include('../../php/head.php'); writeHead('A/V Loop', 'A synchronized WebAudio audio/visual experiment', 'http://cacheflowe.com/code/html/experiment/av-loop/preview.gif'); ?>
 
     <link rel="stylesheet" href="../../stylesheets/font-awesome.min.css" type="text/css" />
     <style>

@@ -1,7 +1,7 @@
 <?php ob_start(); ?>
 <html>
   <head>
-    <?php include('../../php/head.php'); writeHead('Cursor Attention', 'Cursor Attention', 'http://cacheflowe.com/code/web/experiment/cursor-attention/preview.gif'); ?>
+    <?php include('../../php/head.php'); writeHead('Cursor Attention', 'Cursor Attention', 'http://cacheflowe.com/code/html/experiment/cursor-attention/preview.gif'); ?>
 
     <style>
       html, body, .container {

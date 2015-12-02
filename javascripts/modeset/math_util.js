@@ -9,7 +9,7 @@ MathUtil.TWO_PI = Math.PI * 2;
  *  @return the random number within the range.
  *  @use    {@code var vRandRange = MathUtil.randRange( 0, 999999 );}
  */
-MathUtil.randRange = function( min, max ) {   
+MathUtil.randRange = function( min, max ) {
   return Math.round( Math.random() * ( max - min ) ) + min;
 };
 
@@ -20,7 +20,7 @@ MathUtil.randRange = function( min, max ) {
  *  @return the random number within the range.
  *  @use    {@code var vRandRange = MathUtil.randRange( 0, 999999 );}
  */
-MathUtil.randRangeDecimel = function ( min, max ) {   
+MathUtil.randRangeDecimel = function ( min, max ) {
   return Math.random() * ( max - min ) + min;
 };
 
@@ -37,11 +37,11 @@ MathUtil.getPercentWithinRange = function( bottomRange, topRange, valueInRange )
   topRange += -bottomRange;
   valueInRange += -bottomRange;
   bottomRange += -bottomRange;  // last to not break other offsets
-  // return percentage or normalized values 
+  // return percentage or normalized values
   return ( valueInRange / ( topRange - bottomRange ) );
 };
 
-MathUtil.lerpByPercent = function(val1, val2, percent) {
+MathUtil.lerp = function(val1, val2, percent) {
     // 0.5 percent is an even mix
     return val1 + (val2 - val1) * percent;
 };
@@ -50,16 +50,16 @@ MathUtil.map = function(val, inputMin, inputMax, outputMin, outputMax)
 {
       /*
       var inputRange = inputMax - inputMin
-      
+
       var inputFraction = (val - inputMin)/inputRange
-      
+
       var outputRange = outputMax - outputMin
-      
+
       var output = (outputRange * inputFraction) + outputMin
-      
+
       return output
       */
-      
+
   return ((outputMax - outputMin) * ((val - inputMin)/(inputMax - inputMin))) + outputMin;
 }
 
@@ -83,7 +83,7 @@ MathUtil.roundToDecimal = function( inputNum, numPoints ) {
  *  @return number 50
  *  @use    {@code var vRadians = MathUtil.easeTo( 0, 100, 2 );}
  */
-MathUtil.easeTo = function( current, target, easeFactor ) {  
+MathUtil.easeTo = function( current, target, easeFactor ) {
   return current -= ( ( current - target ) / easeFactor );
 };
 
@@ -137,7 +137,7 @@ MathUtil.sums = function( nums ) {
   // declare locals.
   var sum = 0;
   var numL = nums.length;
-  
+
   // loop: convert and add.
   for( var i = 0; i < numL; i++ ) {
     sum += nums[ i ];
@@ -156,7 +156,7 @@ MathUtil.average = function( nums ) {
 }
 
 /**
- *  Linear interpolate between two values.  
+ *  Linear interpolate between two values.
  *  @param  lower first value (-1.0, 43.6)
  *  @param  upper second value (-100.0, 3.1415)
  *  @param  n     point between values (0.0, 1.0)
@@ -167,8 +167,8 @@ MathUtil.interp = function( lower, upper, n ) {
   return ((upper-lower)*n)+lower;
 }
 
-/**   
- *  Re-maps a number from one range to another. 
+/**
+ *  Re-maps a number from one range to another.
  *  @param  value  The incoming value to be converted
  *  @param  lower1 Lower bound of the value's current range
  *  @param  upper1 Upper bound of the value's current range
@@ -196,7 +196,7 @@ MathUtil.getDistance = function ( x1, y1, x2, y2 ) {
   return Math.abs( Math.sqrt(a*a + b*b) );
 };
 
-    
+
 /**
  *  Keep a value between a min & max.
  *  @param  val  The value to clamp
@@ -282,5 +282,3 @@ MathUtil.getRotationDirectionToTarget = function( curAngle, targetAngle ) {
 MathUtil.circleRadiusToEnclosingSquareCorner = function( squareSize ) {
   return (squareSize/2)*(Math.sqrt(2)-1);
 };
-
-
