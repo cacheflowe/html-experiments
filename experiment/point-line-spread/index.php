@@ -32,6 +32,20 @@
       }
     }
 
+		function drawLineToLine(line1X1, line1Y1, line1X2, line1Y2, line2X1, line2Y1, line2X2, line2Y2, numLines) {
+			for (var i = 0; i < numLines; i++) {
+				var linePercent = 1/numLines * i;
+				var line1X = MathUtil.lerp(line1X1, line1X2, linePercent);
+				var line1Y = MathUtil.lerp(line1Y1, line1Y2, linePercent);
+				var line2X = MathUtil.lerp(line2X1, line2X2, linePercent);
+				var line2Y = MathUtil.lerp(line2Y1, line2Y2, linePercent);
+				_context.beginPath();
+				_context.moveTo(line1X, line1Y);
+				_context.lineTo(line2X, line2Y);
+				_context.stroke();
+			}
+		}
+
     var frames = 100;
     var frame = 1;
     var halfW = canvas.width / 2;
