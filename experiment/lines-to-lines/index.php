@@ -1,7 +1,7 @@
 <?php ob_start(); ?>
 <html>
 <head>
-	<?php include('../../php/head.php'); writeHead('Lines to Lines', 'Lines to Lines', 'http://cacheflowe.com/code/html/experiment/point-line-spread/preview.jpg'); ?>
+	<?php include('../../php/head.php'); writeHead('Lines to Lines', 'Lines to Lines', 'http://cacheflowe.com/code/html/experiment/lines-to-lines/preview.png'); ?>
 </head>
 
 <body>
@@ -14,6 +14,8 @@
 	<!-- <script src="../../javascripts/gif/gif.js"></script>
 	<script src="../../javascripts/gif/gif-renderer.js"></script> -->
 	<script>
+		document.ontouchmove = function(e) { e.preventDefault(); };
+
 		var canvas = document.getElementById("source");
 		var _context = canvas.getContext("2d");
     canvas.width = window.innerWidth;
@@ -58,6 +60,8 @@
 			var vertexRadians = (Math.PI * 2) / vertices;
 			var radius = (window.innerWidth > window.innerHeight) ? window.innerHeight : window.innerWidth;
 			radius *= 0.15;
+			if(navigator.userAgent.toLowerCase().match(/iphone/) != null) radius *= 2.5; // why??
+
 			for (var i = 0; i < vertices; i+=2) {
 				// level 1
 				var curRadians = i * vertexRadians;
@@ -195,19 +199,70 @@
 			}
 		}
 
-    var frames = 100;
+		function drawMandala2(progress) {
+			_context.fillStyle = "rgba(255,255,255,1)";
+			_context.fillRect(0, 0, canvas.width, canvas.height);
+			_context.strokeStyle = "rgba(0,0,0,0.95)";
+			_context.lineWidth = 0.7;
+
+			var twoPi = Math.PI * 2;
+			var levels = 8;
+			var vertices = 2 + 2 * Math.ceil(window.pointerPos.xPercent() * 30);
+			// vertices = 14 + Math.round(12 * Math.sin(progress * Math.PI * 2));
+			var vertexRadians = (Math.PI * 2) / vertices;
+			var startRadius = (window.innerWidth > window.innerHeight) ? window.innerHeight : window.innerWidth;
+			startRadius *= 0.04;
+			if(navigator.userAgent.toLowerCase().match(/iphone/) != null) startRadius *= 2.5; // why??
+			var growthPerLevel = 1.1;
+			for (var j = 0; j < levels; j++) {
+
+				var radius = startRadius * growthPerLevel * j;
+				var radiusNext = startRadius * growthPerLevel * (j+1);
+				var radiusNextNext = startRadius * growthPerLevel * (j+2);
+
+				for (var i = 0; i < vertices; i++) {
+
+					var curRadians = (j % 2 == 0) ? i * vertexRadians : (i+0.5) * vertexRadians;
+					var nextRadians = (j % 2 == 0) ? (i+0.5) * vertexRadians : (i+1) * vertexRadians;
+					var nextNextRadians = (j % 2 == 0) ? (i+1) * vertexRadians : (i+1.5) * vertexRadians;
+
+					drawPointToLine(
+						halfW + Math.sin(nextRadians) * radius,
+						halfH + Math.cos(nextRadians) * radius,
+						halfW + Math.sin(curRadians) * radiusNext,
+						halfH + Math.cos(curRadians) * radiusNext,
+						halfW + Math.sin(nextRadians) * radiusNextNext,
+						halfH + Math.cos(nextRadians) * radiusNextNext,
+						Math.round(1/vertices * 200)
+					);
+					drawPointToLine(
+						halfW + Math.sin(nextRadians) * radius,
+						halfH + Math.cos(nextRadians) * radius,
+						halfW + Math.sin(nextRadians) * radiusNextNext,
+						halfH + Math.cos(nextRadians) * radiusNextNext,
+						halfW + Math.sin(nextNextRadians) * radiusNext,
+						halfH + Math.cos(nextNextRadians) * radiusNext,
+						Math.round(1/vertices * 200)
+					);
+				}
+			}
+		}
+
+    var frames = 300;
     var frame = 1;
     var halfW = canvas.width / 2;
     var halfH = canvas.height / 2;
-    var midLinesNum = 200;
-    var shiftedLinesNum = 150;
 
 		var renderer = null; // new GifRenderer();
 
 		function animate() {
       var progress = (frame % frames) / frames;
 			requestAnimationFrame(animate);
-			drawMandala(progress);
+			if(pointerPos.yPercent() < 0.5) {
+				drawMandala(progress);
+			} else {
+				drawMandala2(progress);
+			}
 			if(renderer != null && frame > 20) renderer.addFrame(canvas, frames);
       frame++;
 		}
