@@ -54,7 +54,8 @@ MobileUtil.lockTouchScreen = function( isLocked ) {
 
 MobileUtil.hideSoftKeyboard = function() {
   document.activeElement.blur()
-  $('input').blur()
+  var inputs = document.querySelectorAll('input');
+  for (var i = 0; i < inputs.length; i++) inputs[i].blur();
 };
 
 MobileUtil.addAndroidClasses = function() {
