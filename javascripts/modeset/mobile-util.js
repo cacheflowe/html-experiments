@@ -42,6 +42,10 @@ MobileUtil.orientationUpdated = function() {
   }
 };
 
+MobileUtil.enablePseudoStyles = function() {
+  document.addEventListener("touchstart", function(){}, false);
+};
+
 MobileUtil.lockTouchScreen = function( isLocked ) {
   if( isLocked == false ) {
     document.ontouchmove = null;
