@@ -11,13 +11,15 @@
 	<script src="../../javascripts/three/threex-geometry-utils.js"></script>
 	<script src="../../javascripts/three/three.min.js"></script>
 	<script src="../../javascripts/modeset/pointer-pos.js"></script>
-	<script src="../../javascripts/modeset/math_util.js"></script>
 	<script>
 		document.ontouchmove = function(e) { e.preventDefault(); };
 
+		var lerp = function(val1, val2, percent) {
+		    return val1 + (val2 - val1) * percent;
+		};
+
 		// standard global variables
 		var container, scene, camera, renderer, modeSetSolid;
-		var clock = new THREE.Clock();
 
 		////////////
 		// SCENE & CAMERA
@@ -37,8 +39,8 @@
 		renderer = new THREE.WebGLRenderer( {antialias:true} );
 		renderer.setClearColor( 0xffffff );
 		renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
-		renderer.shadowMapEnabled = true;
-		renderer.shadowMapType = THREE.PCFSoftShadowMap;
+		renderer.shadowMap.enabled = true;
+		renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 		container = document.createElement( 'div' );
 		document.body.appendChild( container );
 		container.appendChild( renderer.domElement );
@@ -51,7 +53,7 @@
 
 		var lights = [];
 		lights[0] = new THREE.PointLight( 0xffffff, 1, 0 );
-		lights[0].position.set( 100, -300, 0 );
+		lights[0].position.set( 100, 300, 0 );
 		scene.add( lights[0] );
 
 		////////////
@@ -113,8 +115,8 @@
 		// });
 		var materialSide = new THREE.MeshLambertMaterial({
 		  color: 0xffffff,
-		  shininess: 100,
-		  specular: 0xcccccc,
+		  // shininess: 100,
+		  // specular: 0xcccccc,
 		  emissive: 0x888888
 		});
 		var materialArray = [ materialFront, materialSide ];
@@ -132,7 +134,7 @@
 		spotlight.target = modeSetSolid;
 		spotlight.castShadow = true;
 		spotlight.shadowDarkness	= 0.15;
-		spotlight.shadowCameraVisible	= false;
+		// spotlight.shadowCameraVisible	= false; // .shadowCameraVisible has been removed. Use new THREE.CameraHelper( light.shadow ) instead.
 		spotlight.shadowBias = 0.0001;
 		spotlight.shadowMapWidth = 2048;
 		spotlight.shadowMapHeight = 2048;
@@ -155,10 +157,16 @@
 
 		  var newX = 2 * (window.pointerPos.yPercent() - 0.5);
 		  var newY = Math.PI + 2 * (window.pointerPos.xPercent() - 0.5);
-		  modeSetSolid.rotation.x = MathUtil.lerp(modeSetSolid.rotation.x, newX, 0.2);
-		  modeSetSolid.rotation.y = MathUtil.lerp(modeSetSolid.rotation.y, newY, 0.2);
+		  modeSetSolid.rotation.x = lerp(modeSetSolid.rotation.x, newX, 0.2);
+		  modeSetSolid.rotation.y = lerp(modeSetSolid.rotation.y, newY, 0.2);
 		}
 		animate();
+
+		window.addEventListener('resize', function() {
+			camera.aspect = window.innerWidth / window.innerHeight;
+			camera.updateProjectionMatrix();
+			renderer.setSize(window.innerWidth, window.innerHeight);
+		}, false);
 	</script>
 </body>
 </html>

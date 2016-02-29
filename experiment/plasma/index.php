@@ -191,6 +191,11 @@
 
 			// kick off the plasma controller
 			var plasma = new Plasma();
+
+			window.addEventListener('resize', function() {
+				canvas.width = window.innerWidth;
+				canvas.height = window.innerHeight;
+			}, false);
 	</script>
 </body>
 </html>

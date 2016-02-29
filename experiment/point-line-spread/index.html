@@ -58,18 +58,34 @@
       }
     }
 
+		function drawLineToLine(line1X1, line1Y1, line1X2, line1Y2, line2X1, line2Y1, line2X2, line2Y2, numLines) {
+			for (var i = 0; i < numLines; i++) {
+				var linePercent = 1/numLines * i;
+				var line1X = MathUtil.lerp(line1X1, line1X2, linePercent);
+				var line1Y = MathUtil.lerp(line1Y1, line1Y2, linePercent);
+				var line2X = MathUtil.lerp(line2X1, line2X2, linePercent);
+				var line2Y = MathUtil.lerp(line2Y1, line2Y2, linePercent);
+				_context.beginPath();
+				_context.moveTo(line1X, line1Y);
+				_context.lineTo(line2X, line2Y);
+				_context.stroke();
+			}
+		}
+
     var frames = 100;
     var frame = 1;
-    var halfW = canvas.width / 2;
-    var halfH = canvas.height / 2;
-    var midLinesNum = 200;
-    var shiftedLinesNum = 150;
 
 		var renderer = null; // new GifRenderer();
 
 		function animate() {
+	    var halfW = canvas.width / 2;
+	    var halfH = canvas.height / 2;
+	    var midLinesNum = 200;
+	    var shiftedLinesNum = 150;
+
       var progress = (frame % frames) / frames;
 			requestAnimationFrame(animate);
+
 			_context.fillStyle = "rgba(255,255,255,0.2)";
 			_context.fillRect(0, 0, canvas.width, canvas.height);
       _context.strokeStyle = "rgba(0,0,0,0.3)";
@@ -83,6 +99,11 @@
       frame++;
 		}
 		requestAnimationFrame(animate);
+
+		window.addEventListener('resize', function() {
+			canvas.width = window.innerWidth;
+	    canvas.height = window.innerHeight;
+		}, false);
 	</script>
 </body>
 </html>

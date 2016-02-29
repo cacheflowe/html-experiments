@@ -63,6 +63,7 @@
         top: 0;
         left: 0;
         display: none;
+        z-index: 30;
       }
     </style>
   </head>
@@ -70,55 +71,22 @@
     <header>
   		<h1>A/V Loop</h1>
   	</header>
-    <div id="debug"></div>
+    <div id="debug"><div class="debugTxt"></div></div>
     <!-- <audio src="my-recording-2-loop-normalized.wav" loop autoplay></video> -->
     <!-- <video src="render-2015-11-10-08-46-20-with-sound.mov" loop autoplay></video> -->
     <canvas id="draw-canvas" class="full-width" width="400" height="400"></canvas>
     <button class="play fa fa-play-circle fa-3"></button>
+    <script src="../../javascripts/modeset/webaudio-loop-ticker.js"></script>
     <script>
       document.ontouchmove = function(e) { e.preventDefault(); };
 
       var debug = document.getElementById('debug');
-      var startTime = 0;
-      var audioTimeOffset = 0.1; // helps with the visual timing
-      var ticks = 64;
-      var tickTime = 0;
-      var curTick = 0;
-      var lastTick = 0;
-
-      // perfect webaudio looping from: http://stackoverflow.com/questions/29882907/how-to-seamlessly-loop-sound-with-web-audio-api
-      var url = 'my-recording-2-loop-normalized.wav';
-      var vol = 1.0;
-      // var url = 'data:audio/wav;base64,';
-      window.AudioContext = window.AudioContext || window.webkitAudioContext;
-      var context = new AudioContext();
-      var source = context.createBufferSource();
-      var gainNode = context.createGain();
-      source.connect(gainNode);
-      gainNode.gain.value = vol;
-      gainNode.connect(context.destination);
-
-      var request = new XMLHttpRequest();
-      request.open('GET', url, true);
-      request.responseType = 'arraybuffer';
-      request.onload = function() {
-        context.decodeAudioData(request.response, function(response) {
-          source.buffer = response;
-          console.log('playing:');
-          console.log('source.buffer.duration', source.buffer.duration);
-          console.log('context.currentTime', context.currentTime);
-        }, function () { console.error('The request failed.'); } );
-      }
-      request.send();
-
-      function playAudio(){
-        source.start(0);
-        source.loop = true;
-        console.log(source);
-        startTime = context.currentTime;
-        tickTime = source.buffer.duration / ticks;
-        requestAnimationFrame(animate);
+      var audioLoop = new WebAudioLoopTicker('my-recording-2-loop-normalized.wav', 64, 1.0, null);
+      function playAudio() {
+        audioLoop.playAudio();
         document.querySelector('button.play').style.display = 'none';
+        document.removeEventListener('touchend', playAudio);
+        document.removeEventListener('mouseup', playAudio);
       }
       document.addEventListener('touchend', playAudio);
       document.addEventListener('mouseup', playAudio);
@@ -211,81 +179,73 @@
 
       function animate() {
         requestAnimationFrame(animate);
-        if(source.buffer) {
-          // calculate audio timing
-          var playbackTime = (context.currentTime - startTime) % source.buffer.duration + audioTimeOffset;
-          curTick = Math.floor(playbackTime / tickTime) % ticks;
-          debug.innerHTML =
-            'context.currentTime = ' + playbackTime + '<br>' +
-            'tick = ' + curTick;
+        audioLoop.update();
 
+        // calculate audio timing
+        var curTick = audioLoop.curTick();
 
-          // draw fading overlay
-          ctx.beginPath();
-          ctx.fillStyle = "rgba(0,0,0,0.05)";
-          ctx.rect(0, 0, canvasDraw.width, canvasDraw.height);
-          ctx.fill();
+        // draw fading overlay
+        ctx.beginPath();
+        ctx.fillStyle = "rgba(0,0,0,0.05)";
+        ctx.rect(0, 0, canvasDraw.width, canvasDraw.height);
+        ctx.fill();
 
-          // update active particles
+        // update active particles
+        for(var i=0; i < particles.length; i++) {
+          if(particles[i].active() == true) {
+            particles[i].update();
+          }
+        }
+
+        // find a dead particle, or add a new one
+        var newX = ((ctx.canvas.width / audioLoop.numTicks()) * (curTick * 2)) % ctx.canvas.width;
+        if(audioLoop.tickChanged() == true) {
+          // turn on the beat
           for(var i=0; i < particles.length; i++) {
             if(particles[i].active() == true) {
-              particles[i].update();
+              if(curTick % 4 == 2) particles[i].beat(0.25);
+              if(curTick % 8 == 4) particles[i].beat(0.75);
             }
           }
 
-          // find a dead particle, or add a new one
-          var newX = ((ctx.canvas.width / ticks) * (curTick * 2)) % ctx.canvas.width;
-
-          if(curTick != lastTick) {
-            // turn on the beat
-            for(var i=0; i < particles.length; i++) {
-              if(particles[i].active() == true) {
-                if(curTick % 4 == 2) particles[i].beat(0.25);
-                if(curTick % 8 == 4) particles[i].beat(0.75);
-              }
-            }
-
-            // random particles
-            // newParticle().reset(newX, ctx.canvas.height * Math.random(), 2, 'rgba(255,255,255,0.3)');
-            // hats
-            if(curTick % 4 == 2) {
-              newParticle().reset(newX, ctx.canvas.height * 0.2, 10, 'rgba(255,255,255,1)');
-            }
-            // smashes
-            if(curTick <= 5) {
-              newParticle().reset(newX, ctx.canvas.height * 0.6, 10, 'rgba(100,200,150,1)');
-            }
-            // snare
-            if(curTick % 8 == 4) {
-              // full flash
-              ctx.beginPath();
-              ctx.fillStyle = "rgba(255,255,255,0.2)";
-              ctx.rect(0, 0, canvasDraw.width, canvasDraw.height);
-              ctx.fill();
-              // line
-              newParticle().reset(newX, ctx.canvas.height * 0.4, 10, 'rgba(190,200,250,1)');
-            }
-            // kick
-            if(curTick % 32 == 0 || curTick % 32 == 5 || curTick % 32 == 7 || curTick % 32 == 8 || curTick % 32 == 21 || curTick % 32 == 23) {  // repeats for both measures, hence % 32 for 64 ticks
-              // flash bar
-              var flashW = 20 + Math.random() * 100;
-              var flashH = canvasDraw.height * 3;
-              ctx.beginPath();
-              ctx.save();
-              ctx.translate(newX, ctx.canvas.height * 0.8);
-              (Math.random() > 0.5) ? ctx.rotate(Math.PI / 4) : ctx.rotate(-Math.PI / 4);
-              ctx.fillStyle = ctx.strokeStyle = "rgba(235,255,235,0.3)";
-              ctx.lineWidth = 2;
-              ctx.rect(-flashW/2, -flashH/2, flashW, flashH);
-              (Math.random() > 0.5) ? ctx.fill() : ctx.stroke();
-              ctx.restore();
-
-              // line
-              newParticle().reset(newX, ctx.canvas.height * 0.8, 10, 'rgba(190,200,250,1)');
-            }
+          // random particles
+          // newParticle().reset(newX, ctx.canvas.height * Math.random(), 2, 'rgba(255,255,255,0.3)');
+          // hats
+          if(curTick % 4 == 2) {
+            newParticle().reset(newX, ctx.canvas.height * 0.2, 10, 'rgba(255,255,255,1)');
           }
+          // smashes
+          if(curTick <= 5) {
+            newParticle().reset(newX, ctx.canvas.height * 0.6, 10, 'rgba(100,200,150,1)');
+          }
+          // snare
+          if(curTick % 8 == 4) {
+            // full flash
+            ctx.beginPath();
+            ctx.fillStyle = "rgba(255,255,255,0.2)";
+            ctx.rect(0, 0, canvasDraw.width, canvasDraw.height);
+            ctx.fill();
+            // line
+            newParticle().reset(newX, ctx.canvas.height * 0.4, 10, 'rgba(190,200,250,1)');
+          }
+          // kick
+          if(curTick % 32 == 0 || curTick % 32 == 5 || curTick % 32 == 7 || curTick % 32 == 8 || curTick % 32 == 21 || curTick % 32 == 23) {  // repeats for both measures, hence % 32 for 64 ticks
+            // flash bar
+            var flashW = 20 + Math.random() * 100;
+            var flashH = canvasDraw.height * 3;
+            ctx.beginPath();
+            ctx.save();
+            ctx.translate(newX, ctx.canvas.height * 0.8);
+            (Math.random() > 0.5) ? ctx.rotate(Math.PI / 4) : ctx.rotate(-Math.PI / 4);
+            ctx.fillStyle = ctx.strokeStyle = "rgba(235,255,235,0.3)";
+            ctx.lineWidth = 2;
+            ctx.rect(-flashW/2, -flashH/2, flashW, flashH);
+            (Math.random() > 0.5) ? ctx.fill() : ctx.stroke();
+            ctx.restore();
 
-          lastTick = curTick;
+            // line
+            newParticle().reset(newX, ctx.canvas.height * 0.8, 10, 'rgba(190,200,250,1)');
+          }
         }
       }
     </script>

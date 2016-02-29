@@ -48,16 +48,18 @@
 
     var frames = 100;
     var frame = 1;
-    var halfW = canvas.width / 2;
-    var halfH = canvas.height / 2;
-    var midLinesNum = 200;
-    var shiftedLinesNum = 150;
 
 		var renderer = null; // new GifRenderer();
 
 		function animate() {
+	    var halfW = canvas.width / 2;
+	    var halfH = canvas.height / 2;
+	    var midLinesNum = 200;
+	    var shiftedLinesNum = 150;
+
       var progress = (frame % frames) / frames;
 			requestAnimationFrame(animate);
+
 			_context.fillStyle = "rgba(255,255,255,0.2)";
 			_context.fillRect(0, 0, canvas.width, canvas.height);
       _context.strokeStyle = "rgba(0,0,0,0.3)";
@@ -71,6 +73,11 @@
       frame++;
 		}
 		requestAnimationFrame(animate);
+
+		window.addEventListener('resize', function() {
+			canvas.width = window.innerWidth;
+	    canvas.height = window.innerHeight;
+		}, false);
 	</script>
 </body>
 </html>

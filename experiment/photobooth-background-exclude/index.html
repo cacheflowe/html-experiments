@@ -1,0 +1,95 @@
+<html>
+<head>
+	
+    <title>CacheFlowe | Photobooth Background Exclude</title>
+    <meta charset="utf-8">
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
+    <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible" />
+    <meta content="no" name="imagetoolbar" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="keywords" content="Photobooth Background Exclude" />
+    <meta name="description" content="Photobooth Background Exclude" />
+    <meta name="author" content="CacheFlowe" />
+    <meta name="copyright" content="CacheFlowe" />
+
+    <meta property="og:site_name" content="CacheFlowe's HTML Experiments"/>
+    <meta property="og:title" content="CacheFlowe | Photobooth Background Exclude"/>
+    <meta property="og:description" content="Photobooth Background Exclude"/>
+    <meta property="og:type" content="website"/>
+    <meta property="og:image" content="http://cacheflowe.com/images/cacheflowe-logo.png"/>
+
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:site" content="@cacheflowe">
+    <meta name="twitter:title" content="CacheFlowe | Photobooth Background Exclude">
+    <meta name="twitter:description" content="Photobooth Background Exclude">
+    <meta name="twitter:image:src" content="http://cacheflowe.com/images/cacheflowe-logo.png">
+    <meta name="twitter:domain" content="http://cacheflowe.com">
+
+    <link rel="stylesheet" href="../../stylesheets/normalize.css" type="text/css" />
+    <link rel="stylesheet" href="../../stylesheets/skeleton.css" type="text/css" />
+    <link rel="stylesheet" href="../../stylesheets/experiments.css" type="text/css" />
+  	<style>
+		#container {
+			width: 100%;
+			height: 100%;
+		}
+		#camera-input,
+		#video-test,
+		#diff-frame {
+			/*display: none;*/
+		}
+		.debug-els {
+			transform: scale(0.3);
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 0px;
+			height: 100px;
+		}
+		#controls {
+			position: fixed;
+			bottom: 0;
+			left: 0;
+			width: 100%;
+		}
+		#controls label {
+			display: inline-block;
+		}
+		canvas {
+			background-color: #f00;
+		}
+	</style>
+</head>
+
+<body>
+	<header>
+		<h1>Photobooth Background Exclude</h1>
+	</header>
+	<div class="debug-els">
+		<video id="camera-input"></video>
+		<video id="video-test" src="test-mov.m4v" autoplay="true" loop="true"></video>
+		<canvas id="diff-frame"></canvas>
+	</div>
+	<div id="controls">
+		<button id="get-frame">Get Frame</button>
+		<label for="colorR">colorR</label>
+		<input type="range" min="0" max="1" step="0.01" value="0" id="colorR">
+		<label for="colorG">colorG</label>
+		<input type="range" min="0" max="1" step="0.01" value="0" id="colorG">
+		<label for="colorB">colorB</label>
+		<input type="range" min="0" max="1" step="0.01" value="0" id="colorB">
+		<label for="thresh">thresh</label>
+		<input type="range" min="0" max="1" step="0.01" value="0" id="thresh">
+		<label for="smooth">smooth</label>
+		<input type="range" min="0" max="1" step="0.01" value="0" id="smooth">
+		<label for="mode">mode</label>
+		<input type="range" min="0" max="1" step="1" value="0" id="mode">
+	</div>
+	<script type="text/javascript" src="./pixi.js"></script>
+	<script type="text/javascript" src="./tv-filter.js"></script>
+	<script type="text/javascript" src="./chroma-color.js"></script>
+	<script type="text/javascript" src="./camera.js"></script>
+	<script type="text/javascript" src="./video.js"></script>
+
+</body>
+</html>

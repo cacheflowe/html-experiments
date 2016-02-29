@@ -86,7 +86,7 @@
 			var vertexRadians = (Math.PI * 2) / vertices;
 			var radius = (window.innerWidth > window.innerHeight) ? window.innerHeight : window.innerWidth;
 			radius *= 0.15;
-			if(navigator.userAgent.toLowerCase().match(/iphone/) != null) radius *= 2.5;
+			if(navigator.userAgent.toLowerCase().match(/iphone/) != null) radius *= 2.5; // why??
 
 			for (var i = 0; i < vertices; i+=2) {
 				// level 1
@@ -238,7 +238,7 @@
 			var vertexRadians = (Math.PI * 2) / vertices;
 			var startRadius = (window.innerWidth > window.innerHeight) ? window.innerHeight : window.innerWidth;
 			startRadius *= 0.04;
-			if(navigator.userAgent.toLowerCase().match(/iphone/) != null) startRadius *= 2.5;
+			if(navigator.userAgent.toLowerCase().match(/iphone/) != null) startRadius *= 2.5; // why??
 			var growthPerLevel = 1.1;
 			for (var j = 0; j < levels; j++) {
 
