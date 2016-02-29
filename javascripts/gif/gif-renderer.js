@@ -1,4 +1,4 @@
-var GifRenderer = function() {
+var GifRenderer = function(saveEl) {
 
   var gifFrames = 0;
   var rendered = false;
@@ -10,7 +10,14 @@ var GifRenderer = function() {
     workerScript: '../../javascripts/gif/gif.worker.js'
   });
   gif.on('finished', function(blob) {
-    window.open(URL.createObjectURL(blob));
+    if(typeof saveEl === "undefined") {
+      window.open(URL.createObjectURL(blob));
+    } else {
+      var imgTag = document.createElement('img');
+      imgTag.src = URL.createObjectURL(blob);
+      saveEl.innerHTML = '';
+      saveEl.appendChild(imgTag);
+    }
   });
 
   var addFrame = function(canvas, frames) {
